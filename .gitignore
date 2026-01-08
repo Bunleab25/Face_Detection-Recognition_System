@@ -1,0 +1,75 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ultralytics / YOLO outputs
+runs/
+wandb/
+
+# Large datasets (keep locally; manage separately if needed)
+face_datasets/
+LFW_datasets/
+combined_dataset/
+known_faces/
+
+# Model weights (optional - uncomment if models are large)
+# *.pt
+# *.pth
+# *.onnx
+
+# Database files
+*.db
+*.sqlite
+*.npy
+face_database.npy
+
+# Local env files
+.env
+.env.*
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.Python
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+
+# Documentation builds
+docs/_build/
+
+# Temporary files
+*.tmp
+temp/
+tmp/

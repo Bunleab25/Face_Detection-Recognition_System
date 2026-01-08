@@ -1,0 +1,9 @@
+# Core runtime dependencies
+ultralytics==8.3.246
+opencv-python==4.12.0.88
+torchvision  # Required by ultralytics
+tqdm  # Progress bars for batch processing
+
+# NOTE:
+# - Ultralytics uses PyTorch.
+# - For GPU (CUDA) support on Windows, install from requirements-gpu.txt.

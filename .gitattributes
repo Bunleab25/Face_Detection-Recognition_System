@@ -1,0 +1,37 @@
+# Git LFS tracking patterns
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+*.pb filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+
+# Ensure Windows line endings in PowerShell scripts
+*.ps1 text eol=crlf
+
+# Ensure Unix line endings in shell scripts
+*.sh text eol=lf
+
+# Auto detect text files
+* text=auto
+
+# Python files
+*.py text diff=python
+
+# Documentation
+*.md text
+*.txt text
+*.rst text
+
+# Configuration files
+*.json text
+*.yaml text
+*.yml text
+*.toml text
+
+# Images (binary)
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.bmp binary

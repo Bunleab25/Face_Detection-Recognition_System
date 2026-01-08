@@ -1,0 +1,12 @@
+# GPU-enabled PyTorch wheels (Windows)
+# This matches the current working environment in this repo:
+#   torch 2.6.0+cu124
+#   torchvision 0.21.0+cu124
+--index-url https://download.pytorch.org/whl/cu124
+
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+
+# Keep the rest of the stack aligned
+ultralytics==8.3.246
+opencv-python==4.12.0.88
