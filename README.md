@@ -122,8 +122,7 @@ requirements*.txt    CPU, GPU, core, and web dependency lists
 
 ## Documentation
 
-- [Quick start guide](QUICKSTART.md)
-- [Project structure](PROJECT_STRUCTURE.md)
+- [Project structure](docs/project-structure.md)
 - [ArcFace quick start](docs/arcface_quickstart.md)
 - [Face alignment guide](docs/face_alignment_guide.md)
 - [ArcFace architecture reference](docs/arcface_architecture_reference.md)
