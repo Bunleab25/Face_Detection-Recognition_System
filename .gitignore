@@ -50,6 +50,7 @@ face_database.npy
 .env
 .env.*
 .env.local
+!.env.example
 
 # Logs
 *.log

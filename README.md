@@ -1,321 +1,139 @@
 # Face Detection & Recognition System
 
-A complete face detection and recognition system using **YOLOv11** for face detection and **ArcFace** for face recognition. Features real-time webcam processing, FastAPI web interface, and comprehensive training pipelines.
+A Python project for face detection and recognition using YOLO and ArcFace. It includes command-line tools for detection and model training, face recognition workflows, and a FastAPI web interface.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.6.0-orange.svg)
-![YOLO](https://img.shields.io/badge/YOLO-v11-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+> **Status:** This is a research and learning project. Recognition quality depends on the model, data, and operating conditions; validate it for your use case before relying on its output.
 
-##  Features
+## Features
 
-- **Face Detection**: YOLOv11-based high-performance face detector
-- **Face Recognition**: ArcFace (ResNet50) for identity recognition
-- **Real-time Processing**: Webcam support for live face detection & recognition
-- **Web Interface**: FastAPI-based web application with REST API
-- **Face Alignment**: Automatic 5-point landmark alignment for ArcFace
-- **Database Management**: SQLite database for storing face embeddings
-- **Multi-Platform**: CPU and GPU (CUDA) support
+- Face detection with YOLO-based models
+- ArcFace embedding and recognition workflows
+- Image, video, and webcam scripts
+- FastAPI interface for enrollment and recognition
+- CPU support, with optional CUDA acceleration
+- Training, evaluation, and alignment guides in [`docs/`](docs/)
 
-##  Table of Contents
+## Requirements
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Usage](#usage)
-  - [Face Detection](#face-detection)
-  - [Face Recognition](#face-recognition)
-  - [Web Application](#web-application)
-- [Training](#training)
-- [Documentation](#documentation)
-- [Requirements](#requirements)
-- [Contributing](#contributing)
-- [License](#license)
+- Python 3.9 or later
+- Git LFS for the model weights stored in this repository
+- A webcam for live camera examples
+- An NVIDIA GPU is optional
 
-##  Installation
+## Get started
 
-### Prerequisites
+Install Git LFS before cloning so the model files are downloaded rather than left as pointer files:
 
-- Python 3.8 or higher
-- CUDA-capable GPU (optional, for faster processing)
-- Webcam (for real-time features)
-
-### Setup
-
-1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/face_detector.git
-cd face_detector
+git lfs install
+git clone https://github.com/Bunleab25/Face_Detection-Recognition_System.git
+cd Face_Detection-Recognition_System
+git lfs pull
 ```
 
-2. **Create virtual environment**
+Create and activate a virtual environment:
+
 ```bash
 python -m venv .venv
 ```
 
-3. **Activate virtual environment**
+Linux/macOS:
 
-Windows (PowerShell):
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-```
-
-Linux/Mac:
 ```bash
 source .venv/bin/activate
 ```
 
-4. **Install dependencies**
+Windows PowerShell:
 
-For CPU:
-```bash
-pip install -r requirements.txt
-pip install -r requirements-cpu.txt
+```powershell
+.\.venv\Scripts\Activate.ps1
 ```
 
-For GPU (CUDA 12.4):
+Install the CPU dependencies:
+
 ```bash
-pip install -r requirements.txt
-pip install -r requirements-gpu.txt
+python -m pip install -r requirements.txt -r requirements-cpu.txt
 ```
 
-For Web Application:
+For CUDA 12.4, install the base dependencies and the GPU PyTorch wheels instead:
+
 ```bash
-pip install -r requirements_fastapi.txt
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-gpu.txt
 ```
 
-## ⚡ Quick Start
+The GPU requirements target PyTorch 2.6.0 with CUDA 12.4. For other CUDA versions, install the matching PyTorch and torchvision builds from the [official PyTorch selector](https://pytorch.org/get-started/locally/).
 
-### Face Detection (Webcam)
+## Quick start
+
+### Detect faces in an image
+
 ```bash
-python scripts/realtime.py --source 0 --device 0
+python scripts/predict.py \
+  --model web_app/models/yolo_face.pt \
+  --source path/to/image.jpg \
+  --device cpu
 ```
 
-### Face Recognition (Webcam)
+Use `--device 0` to select the first CUDA GPU when CUDA is installed. Prediction outputs are saved under `runs/detect/`.
+
+### Start the web application
+
+Copy the example configuration and install the web dependencies:
+
 ```bash
-python main_system.py --database face_database.npy
+cp .env.example .env
+python -m pip install -r requirements_fastapi.txt
 ```
 
-### Web Application
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
+
+Run the server from the repository root:
+
 ```bash
 uvicorn app.main:app --reload
 ```
-Visit `http://localhost:8000` in your browser.
 
-## 📁 Project Structure
+Open <http://127.0.0.1:8000>. The API currently provides:
 
-```
-face_detector/
-├── app/                        # FastAPI web application
-│   ├── main.py                 # API endpoints
-│   ├── face_service.py         # Face processing service
-│   ├── database.py             # Database models
-│   ├── config.py               # Configuration
-│   └── static/                 # Web UI assets
-├── scripts/                    # Core scripts
-│   ├── train.py                # YOLO training
-│   ├── train_arcface.py        # ArcFace training
-│   ├── predict.py              # Batch prediction
-│   ├── realtime.py             # Real-time detection
-│   ├── realtime_recognition.py # Real-time recognition
-│   ├── face_alignment.py       # Face alignment
-│   ├── register_identity.py    # Register new identity
-│   └── model.py                # ArcFace model definition
-├── docs/                       # Documentation
-│   ├── arcface_quickstart.md
-│   ├── face_alignment_guide.md
-│   └── ...
-├── main_system.py              # Standalone recognition system
-├── requirements.txt            # Core dependencies
-├── requirements-gpu.txt        # GPU (CUDA) dependencies
-├── requirements-cpu.txt        # CPU-only dependencies
-├── requirements_fastapi.txt    # Web app dependencies
-├── .gitignore                  # Git ignore rules
-└── README.md                   # This file
-```
+- `POST /enroll` — enroll a person using a `name` form field and an image `file`
+- `POST /recognize` — find the closest enrolled identity for an image `file`
 
-## 📖 Usage
+Example enrollment request:
 
-### Face Detection
-
-**Single Image Prediction:**
 ```bash
-python scripts/predict.py --source path/to/image.jpg --device 0
+curl -X POST http://127.0.0.1:8000/enroll \
+  -F "name=Example Person" \
+  -F "file=@path/to/image.jpg"
 ```
 
-**Batch Processing:**
-```bash
-python scripts/predict.py --source path/to/images/ --device 0
+The sample `.env` points to the model weights tracked with Git LFS. Set `DEVICE=cpu` for CPU inference or `DEVICE=cuda` when a compatible CUDA environment is available. Keep `.env` and local databases private; they are intentionally excluded from version control.
+
+## Project layout
+
+```text
+app/                 FastAPI application and static web interface
+docs/                Setup, architecture, alignment, and training guides
+scripts/             Detection, recognition, training, and evaluation tools
+web_app/models/      YOLO face detector and ArcFace weights (Git LFS)
+main_system.py       Standalone recognition entry point
+requirements*.txt    CPU, GPU, core, and web dependency lists
 ```
 
-**Real-time Webcam:**
-```bash
-python scripts/realtime.py --source 0 --device 0
-```
-Press `q` or `Esc` to quit.
+## Documentation
 
-### Face Recognition
+- [Quick start guide](QUICKSTART.md)
+- [Project structure](PROJECT_STRUCTURE.md)
+- [ArcFace quick start](docs/arcface_quickstart.md)
+- [Face alignment guide](docs/face_alignment_guide.md)
+- [ArcFace architecture reference](docs/arcface_architecture_reference.md)
+- [Training and inference](docs/step3_4_training_inference.md)
+- [Contributing](CONTRIBUTING.md)
 
-**Register New Identity:**
-```bash
-python scripts/register_identity.py --name "John Doe" --image path/to/john.jpg
-```
+## Privacy and responsible use
 
-**Run Recognition System:**
-```bash
-python main_system.py --database face_database.npy --threshold 0.5
-```
+Face images and recognition embeddings are sensitive biometric data. Obtain informed consent, restrict access, protect stored data, and follow applicable laws and organizational policies. Do not use this project as the sole basis for consequential decisions.
 
-**Real-time Recognition:**
-```bash
-python scripts/realtime_recognition.py --database face_database.npy
-```
+## License
 
-### Web Application
-
-**Start Server:**
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-**API Endpoints:**
-- `POST /enroll` - Enroll new user with face image
-- `POST /recognize` - Recognize face from image
-- `GET /users` - List all enrolled users
-- `DELETE /users/{id}` - Delete user by ID
-
-**Example cURL:**
-```bash
-# Enroll user
-curl -X POST "http://localhost:8000/enroll" \
-  -F "name=John Doe" \
-  -F "file=@photo.jpg"
-
-# Recognize face
-curl -X POST "http://localhost:8000/recognize" \
-  -F "file=@unknown.jpg"
-```
-
-### Face Alignment
-
-**Align Single Image:**
-```bash
-python scripts/face_alignment.py input.jpg --output-dir aligned_faces --device 0
-```
-
-**Batch Dataset Alignment:**
-```bash
-python scripts/preprocess_arcface_dataset.py \
-  --input-dir raw_faces/ \
-  --output-dir aligned_faces_112/ \
-  --yolo-model yolo11n.pt \
-  --device 0
-```
-
-##  Training
-
-### Train Face Detector (YOLO)
-
-**Basic Training:**
-```bash
-python scripts/train.py \
-  --data face_datasets/data.yaml \
-  --model yolo11n.pt \
-  --device 0 \
-  --imgsz 640 \
-  --epochs 50
-```
-
-**Fast Training (Optimized):**
-```bash
-python scripts/train_yolo11n_fast.py \
-  --data face_datasets/data.yaml \
-  --model yolo11n.pt \
-  --device 0 \
-  --epochs 100
-```
-
-### Train Face Recognition (ArcFace)
-
-**Prepare Dataset:**
-1. Place face images in `combined_dataset/PersonName/` folders
-2. Run alignment:
-```bash
-python scripts/preprocess_arcface_dataset.py \
-  --input-dir combined_dataset/ \
-  --output-dir aligned_dataset_112/ \
-  --lfw-mode
-```
-
-**Train Model:**
-```bash
-python scripts/train_arcface.py \
-  --data-dir aligned_dataset_112/ \
-  --epochs 100 \
-  --batch-size 64 \
-  --device 0
-```
-
-**Evaluate:**
-```bash
-python scripts/evaluate_accuracy.py \
-  --model runs/arcface_train/arcface_resnet50_epoch_100.pth \
-  --test-dir test_dataset/
-```
-
-## 📚 Documentation
-
-Detailed documentation available in the `docs/` folder:
-
-- [ArcFace Quick Start](docs/arcface_quickstart.md)
-- [Face Alignment Guide](docs/face_alignment_guide.md)
-- [ArcFace Architecture](docs/arcface_architecture_reference.md)
-- [Training & Inference](docs/step3_4_training_inference.md)
-- [Implementation Details](docs/arcface_alignment_implementation.md)
-
-##  Requirements
-
-**Core Dependencies:**
-- Python 3.8+
-- PyTorch 2.6.0+
-- Ultralytics 8.3.246
-- OpenCV 4.12.0
-- NumPy
-- torchvision
-
-**Optional Dependencies:**
-- FastAPI (web interface)
-- SQLAlchemy (database)
-- uvicorn (ASGI server)
-
-See `requirements*.txt` files for complete dependency lists.
-
-##  Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-##  License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) - Face detection
-- [ArcFace](https://arxiv.org/abs/1801.07698) - Face recognition architecture
-- [LFW Dataset](http://vis-www.cs.umass.edu/lfw/) - Training data
-- [WIDER FACE](http://shuoyang1213.me/WIDERFACE/) - Detection dataset
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
-
----
-
-
+This project is licensed under the [MIT License](LICENSE).
