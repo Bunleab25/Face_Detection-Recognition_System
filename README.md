@@ -7,7 +7,7 @@ A complete face detection and recognition system using **YOLOv11** for face dete
 ![YOLO](https://img.shields.io/badge/YOLO-v11-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-## 🌟 Features
+##  Features
 
 - **Face Detection**: YOLOv11-based high-performance face detector
 - **Face Recognition**: ArcFace (ResNet50) for identity recognition
@@ -17,7 +17,7 @@ A complete face detection and recognition system using **YOLOv11** for face dete
 - **Database Management**: SQLite database for storing face embeddings
 - **Multi-Platform**: CPU and GPU (CUDA) support
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -32,7 +32,7 @@ A complete face detection and recognition system using **YOLOv11** for face dete
 - [Contributing](#contributing)
 - [License](#license)
 
-## 🚀 Installation
+##  Installation
 
 ### Prerequisites
 
@@ -213,7 +213,7 @@ python scripts/preprocess_arcface_dataset.py \
   --device 0
 ```
 
-## 🎓 Training
+##  Training
 
 ### Train Face Detector (YOLO)
 
@@ -274,7 +274,7 @@ Detailed documentation available in the `docs/` folder:
 - [Training & Inference](docs/step3_4_training_inference.md)
 - [Implementation Details](docs/arcface_alignment_implementation.md)
 
-## 📦 Requirements
+##  Requirements
 
 **Core Dependencies:**
 - Python 3.8+
@@ -291,7 +291,7 @@ Detailed documentation available in the `docs/` folder:
 
 See `requirements*.txt` files for complete dependency lists.
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -301,7 +301,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
@@ -318,4 +318,4 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Made with ❤️ using PyTorch and YOLO**
+
