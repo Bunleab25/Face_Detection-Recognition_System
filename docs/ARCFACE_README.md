@@ -62,7 +62,7 @@ pip install torch torchvision opencv-python ultralytics tqdm
 python scripts/preprocess_arcface_dataset.py \
   --input-dir LFW_datasets/lfw-deepfunneled/lfw-deepfunneled \
   --output-dir LFW_datasets/lfw_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device cuda \
   --lfw-mode
 ```

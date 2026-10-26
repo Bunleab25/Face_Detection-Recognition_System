@@ -70,7 +70,7 @@ The GPU requirements target PyTorch 2.6.0 with CUDA 12.4. For other CUDA version
 
 ```bash
 python scripts/predict.py \
-  --model web_app/models/yolo_face.pt \
+  --model models/yolo_face.pt \
   --source path/to/image.jpg \
   --device cpu
 ```
@@ -115,7 +115,7 @@ The sample `.env` points to the model weights tracked with Git LFS. Set `DEVICE=
 app/                 FastAPI application and static web interface
 docs/                Setup, architecture, alignment, and training guides
 scripts/             Detection, recognition, training, and evaluation tools
-web_app/models/      YOLO face detector and ArcFace weights (Git LFS)
+models/              YOLO and ArcFace weights (Git LFS)
 main_system.py       Standalone recognition entry point
 requirements*.txt    CPU, GPU, core, and web dependency lists
 ```

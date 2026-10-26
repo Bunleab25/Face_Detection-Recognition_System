@@ -181,7 +181,7 @@ class FaceAligner:
         """Initialize face aligner.
 
         Args:
-            yolo_model_path: Path to YOLO .pt weights (e.g., yolo11n.pt or face-specific).
+            yolo_model_path: Path to YOLO .pt weights (e.g., models/yolo11n.pt or face-specific).
             device: Device for YOLO inference ("cpu", "0", "cuda", etc.).
             conf_threshold: Confidence threshold for face detection.
             landmark_method: "cv2_face" (requires opencv-contrib-python) or "fallback" (bbox-based).
@@ -260,7 +260,12 @@ class FaceAligner:
         return aligned_faces
 
 
-def demo_alignment(image_path: str, output_dir: str = "runs/alignment", yolo_model: str = "yolo11n.pt", device: str = "0") -> None:
+def demo_alignment(
+    image_path: str,
+    output_dir: str = "runs/alignment",
+    yolo_model: str = "models/yolo11n.pt",
+    device: str = "0",
+) -> None:
     """Demo: align faces in an image and save results.
 
     Args:
@@ -297,7 +302,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Face alignment demo for ArcFace preprocessing.")
     parser.add_argument("image_path", type=str, help="Path to input image")
     parser.add_argument("--output-dir", type=str, default="runs/alignment", help="Output directory (default: runs/alignment)")
-    parser.add_argument("--yolo-model", type=str, default="yolo11n.pt", help="YOLO model path (default: yolo11n.pt)")
+    parser.add_argument(
+        "--yolo-model",
+        type=str,
+        default="models/yolo11n.pt",
+        help="YOLO model path (default: models/yolo11n.pt)",
+    )
     parser.add_argument("--device", type=str, default="0", help="Device: 0, cpu, etc. (default: 0)")
 
     args = parser.parse_args()

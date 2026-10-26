@@ -4,8 +4,9 @@
 .
 ├── app/                 FastAPI application, model service, and web assets
 ├── docs/                Setup, usage, architecture, and training guides
+├── models/              YOLO and ArcFace model weights (Git LFS)
 ├── scripts/             Detection, recognition, training, and evaluation tools
-├── web_app/             Alternate web-app launcher and Git LFS model weights
+├── web_app/             Alternate web-app launcher
 ├── .env.example         Safe template for local model configuration
 ├── CONTRIBUTING.md      Contribution guidelines
 ├── LICENSE              MIT license

@@ -243,8 +243,8 @@ def main() -> None:
     parser.add_argument(
         "--yolo-model",
         type=str,
-        default="yolo11n.pt",
-        help="Path to YOLO .pt weights (default: yolo11n.pt)",
+        default="models/yolo11n.pt",
+        help="Path to YOLO .pt weights (default: models/yolo11n.pt)",
     )
     parser.add_argument(
         "--device",

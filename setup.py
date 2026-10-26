@@ -73,6 +73,7 @@ def create_directories():
     print_header("Creating Project Directories")
     
     dirs = [
+        "models",
         "runs",
         "runs/detect",
         "runs/train",
@@ -89,7 +90,7 @@ def download_yolo_model():
     """Download YOLO model if not exists"""
     print_header("Checking YOLO Model")
     
-    model_path = "yolo11n.pt"
+    model_path = os.path.join("models", "yolo11n.pt")
     
     if os.path.exists(model_path):
         print(f"✓ {model_path} already exists")

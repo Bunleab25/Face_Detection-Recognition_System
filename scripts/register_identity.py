@@ -22,7 +22,7 @@ def register_from_webcam(output_dir, name, num_photos=5):
     # Initialize face aligner
     print("Initializing camera and face detector...")
     aligner = FaceAligner(
-        yolo_model_path='yolo11n.pt',
+        yolo_model_path='models/yolo11n.pt',
         device='cuda' if cv2.cuda.getCudaEnabledDeviceCount() > 0 else 'cpu',
         conf_threshold=0.5,
     )
@@ -118,7 +118,7 @@ def register_from_image(output_dir, name, image_path):
     
     # Initialize face aligner
     aligner = FaceAligner(
-        yolo_model_path='yolo11n.pt',
+        yolo_model_path='models/yolo11n.pt',
         device='cuda' if cv2.cuda.getCudaEnabledDeviceCount() > 0 else 'cpu',
         conf_threshold=0.5,
     )

@@ -41,7 +41,7 @@ def main(db_file=DB_FILE, threshold=THRESHOLD, camera_id=0, model_path=MODEL_PAT
 
     # 2. Load Models
     print("Loading detection model...")
-    detector = YOLO("yolo11n.pt")
+    detector = YOLO("models/yolo11n.pt")
     
     print("Loading recognition model...")
     # Load checkpoint first to get num_classes

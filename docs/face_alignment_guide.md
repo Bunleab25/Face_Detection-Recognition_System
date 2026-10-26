@@ -57,7 +57,7 @@ python scripts/face_alignment.py AcrFace/lfw-deepfunneled/lfw-deepfunneled/Aaron
 python scripts/preprocess_arcface_dataset.py \
   --input-dir AcrFace/lfw-deepfunneled/lfw-deepfunneled \
   --output-dir AcrFace/lfw_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --lfw-mode
 ```
@@ -78,7 +78,7 @@ AcrFace/lfw_aligned_112/
 python scripts/preprocess_arcface_dataset.py \
   --input-dir face_datasets/train/images \
   --output-dir face_datasets/train_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --conf 0.5 \
   --save-all

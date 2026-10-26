@@ -20,7 +20,7 @@ Core alignment module with:
 from face_alignment import FaceAligner
 
 aligner = FaceAligner(
-    yolo_model_path="yolo11n.pt",
+    yolo_model_path="models/yolo11n.pt",
     device="0",
     landmark_method="fallback"
 )
@@ -41,7 +41,7 @@ Batch preprocessing script for entire datasets:
 python scripts/preprocess_arcface_dataset.py \
   --input-dir LFW_datasets/lfw-deepfunneled/lfw-deepfunneled \
   --output-dir LFW_datasets/lfw_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device cpu \
   --lfw-mode
 
@@ -49,7 +49,7 @@ python scripts/preprocess_arcface_dataset.py \
 python scripts/preprocess_arcface_dataset.py \
   --input-dir face_datasets/train/images \
   --output-dir face_datasets/train_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --save-all
 ```
@@ -69,7 +69,7 @@ Complete documentation covering:
 ### Alignment Pipeline (4 Steps)
 
 1. **Face Detection** (YOLOv11)
-   - Uses your existing `yolo11n.pt` model
+   - Uses your existing `models/yolo11n.pt` model
    - Configurable confidence threshold (default: 0.5)
 
 2. **Landmark Detection** (2 methods)
@@ -137,7 +137,7 @@ Choose one:
 python scripts/preprocess_arcface_dataset.py \
   --input-dir LFW_datasets/lfw-deepfunneled/lfw-deepfunneled \
   --output-dir LFW_datasets/lfw_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --lfw-mode
 ```
@@ -147,7 +147,7 @@ python scripts/preprocess_arcface_dataset.py \
 python scripts/preprocess_arcface_dataset.py \
   --input-dir face_datasets/train/images \
   --output-dir face_datasets/train_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --conf 0.5
 ```

@@ -44,7 +44,7 @@ Detected and aligned 1 face(s)
 python scripts/preprocess_arcface_dataset.py \
   --input-dir LFW_datasets/lfw-deepfunneled/lfw-deepfunneled \
   --output-dir LFW_datasets/lfw_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --lfw-mode
 ```
@@ -69,7 +69,7 @@ LFW_datasets/lfw_aligned_112/
 python scripts/preprocess_arcface_dataset.py \
   --input-dir face_datasets/train/images \
   --output-dir face_datasets/train_aligned_112 \
-  --yolo-model yolo11n.pt \
+  --yolo-model models/yolo11n.pt \
   --device 0 \
   --conf 0.5
 ```

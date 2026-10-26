@@ -63,7 +63,7 @@ class FaceRecognitionSystem:
         
         # Initialize face aligner
         self.aligner = FaceAligner(
-            yolo_model_path='yolo11n.pt',
+            yolo_model_path='models/yolo11n.pt',
             device=device,
             conf_threshold=0.5,
         )

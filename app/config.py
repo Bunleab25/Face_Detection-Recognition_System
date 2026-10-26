@@ -5,9 +5,17 @@ from pathlib import Path
 from dataclasses import dataclass
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
 def _get_env_str(key: str, default: str) -> str:
     value = os.getenv(key)
     return value if value is not None and value.strip() != "" else default
+
+
+def _resolve_project_path(value: str) -> str:
+    path = Path(value).expanduser()
+    return str(path if path.is_absolute() else PROJECT_ROOT / path)
 
 
 def _get_env_float(key: str, default: float) -> float:
@@ -29,7 +37,7 @@ def _load_dotenv_if_present() -> None:
 
     candidates = [
         Path.cwd() / ".env",
-        (Path(__file__).resolve().parent.parent / ".env"),
+        PROJECT_ROOT / ".env",
     ]
     def should_override(key: str, new_value: str) -> bool:
         current = os.getenv(key)
@@ -88,9 +96,11 @@ class Settings:
 def load_settings() -> Settings:
     _load_dotenv_if_present()
     return Settings(
-        yolo_model_path=_get_env_str("YOLO_MODEL_PATH", "yolo11n.pt"),
-        arcface_ckpt_path=_get_env_str(
-            "ARCFACE_CKPT_PATH", "runs/arcface_train/arcface_resnet50_epoch_100.pth"
+        yolo_model_path=_resolve_project_path(
+            _get_env_str("YOLO_MODEL_PATH", "models/yolo_face.pt")
+        ),
+        arcface_ckpt_path=_resolve_project_path(
+            _get_env_str("ARCFACE_CKPT_PATH", "models/arcface.pth")
         ),
         device=_get_env_str("DEVICE", "cuda"),
         yolo_conf=_get_env_float("YOLO_CONF", 0.5),

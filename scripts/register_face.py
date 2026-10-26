@@ -153,7 +153,7 @@ def main():
     # Initialize aligner
     print("\n2. Initializing face aligner...")
     aligner = FaceAligner(
-        yolo_model_path='yolo11n.pt',
+        yolo_model_path='models/yolo11n.pt',
         device=args.device,
         conf_threshold=0.5,
     )

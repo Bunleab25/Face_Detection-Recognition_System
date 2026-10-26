@@ -10,8 +10,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run YOLO prediction on an image/folder/video.")
     parser.add_argument(
         "--model",
-        default="yolo11n.pt",
-        help="Path to a YOLO weights file (.pt). Default: yolo11n.pt",
+        default="models/yolo11n.pt",
+        help="Path to a YOLO weights file (.pt). Default: models/yolo11n.pt",
     )
     parser.add_argument(
         "--source",

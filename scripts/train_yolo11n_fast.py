@@ -20,8 +20,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="yolo11n.pt",
-        help="Base model weights (.pt). Default: yolo11n.pt",
+        default="models/yolo11n.pt",
+        help="Base model weights (.pt). Default: models/yolo11n.pt",
     )
     parser.add_argument(
         "--device",
