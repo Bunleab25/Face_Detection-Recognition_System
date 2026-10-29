@@ -27,7 +27,7 @@ Automated inference latency, throughput, and hardware efficiency benchmarks meas
 ### ArcFace Deep Feature Extractor (`models/arcface.pth` — 209.65 MB)
 - **Architecture**: ResNet-50 Backbone (27,430,976 parameters)
 - **Input Resolution**: 112×112 px
-- **Embedding Space**: 512-Dimensional Hyperspherical Manifold ($L_2$ Normalized)
+- **Embedding Space**: 512-Dimensional Hyperspherical Manifold (L2 Normalized)
 
 | Compute Device | Mean Latency | Median | P95 Latency | Embeddings / Sec | VRAM Peak | Acceleration |
 |:---------------|:-------------|:-------|:------------|:-----------------|:----------|:-------------|
@@ -94,7 +94,7 @@ The model weights include full 100-epoch training history and validation traject
 
 ### ArcFace ResNet-50 Feature Extractor Convergence
 
-Trained on 5,749 identity classes with additive angular margin penalty ($s = 64.0, m = 0.50$) and MultiStepLR decay at epochs 20, 35, and 45.
+Trained on 5,749 identity classes with additive angular margin penalty (`scale = 64.0`, `margin = 0.50`) and MultiStepLR decay at epochs 20, 35, and 45.
 
 ![ArcFace Loss Curve](../assets/research/arcface_training_loss_curve.png)
 *Figure 5.3: ArcFace cross-entropy loss convergence and learning rate step schedule.*

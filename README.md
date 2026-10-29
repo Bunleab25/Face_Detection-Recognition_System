@@ -11,12 +11,14 @@ Open-set face identification requires mapping facial images to a compact latent 
 
 ### Additive Angular Margin Loss (ArcFace)
 
-Standard softmax cross-entropy separates feature vectors using linear hyperplanes but fails to enforce geodesic angular margins on open-set verification tasks. ArcFace (Deng et al., CVPR 2019) incorporates an additive angular margin penalty $m$ directly into the target logit angle on a normalized hypersphere:
+Standard softmax cross-entropy separates feature vectors using linear hyperplanes but fails to enforce geodesic angular margins on open-set verification tasks. ArcFace (Deng et al., CVPR 2019) incorporates an additive angular margin penalty `m` directly into the target logit angle on a normalized hypersphere:
 
-$$\mathcal{L}_{\text{ArcFace}} = -\frac{1}{N} \sum_{i=1}^{N} \log \frac{e^{s(\cos(\theta_{y_i} + m))}}{e^{s(\cos(\theta_{y_i} + m))} + \sum_{j \neq y_i} e^{s \cos \theta_j}}$$
+```text
+L_ArcFace = - (1 / N) * Σ log( e^(s * cos(θ_yi + m)) / ( e^(s * cos(θ_yi + m)) + Σ_(j≠yi) e^(s * cos(θ_j)) ) )
+```
 
-- $s = 64.0$: Feature scale factor projecting embeddings onto hypersphere radius $s$.
-- $m = 0.5$: Additive angular margin penalty (radians), enforcing strict decision boundaries between adjacent identity clusters.
+- **Scale factor (`s = 64.0`)**: Projects embeddings onto a hypersphere radius `s`.
+- **Angular margin (`m = 0.50`)**: Additive angular margin penalty (radians), enforcing strict decision boundaries between adjacent identity clusters.
 
 ![ArcFace Decision Margin Comparison](assets/research/arcface_geometric_margin_comparison.png)
 *Figure 1: Comparison of decision margins across Softmax, SphereFace, CosFace, and ArcFace under binary classification (adapted from Deng et al., CVPR 2019).*
@@ -25,13 +27,17 @@ $$\mathcal{L}_{\text{ArcFace}} = -\frac{1}{N} \sum_{i=1}^{N} \log \frac{e^{s(\co
 
 ### Pipeline Architecture
 
-1. **Face Localization**: YOLO detects face regions and outputs bounding box coordinates $(x_1, y_1, x_2, y_2)$ and confidence scores.
-2. **Alignment & Preprocessing**: Facial crops are aligned and resized to $112 \times 112$ tensors, normalized to mean $[0.5, 0.5, 0.5]$ and std $[0.5, 0.5, 0.5]$.
-3. **Hyperspherical Embedding**: ResNet-50 extracts a 512-dimensional vector $\mathbf{z} \in \mathbb{R}^{512}$, normalized via $L_2$-norm:
-   $$\hat{\mathbf{z}} = \frac{\mathbf{z}}{\|\mathbf{z}\|_2}, \quad \|\hat{\mathbf{z}}\|_2 = 1$$
+1. **Face Localization**: YOLO detects face regions and outputs bounding box coordinates `(x1, y1, x2, y2)` and confidence scores.
+2. **Alignment & Preprocessing**: Facial crops are aligned and resized to `112 × 112` tensors, normalized to mean `[0.5, 0.5, 0.5]` and std `[0.5, 0.5, 0.5]`.
+3. **Hyperspherical Embedding**: ResNet-50 extracts a 512-dimensional vector `z`, normalized via L2-norm (`||z|| = 1`):
+   ```text
+   z_norm = z / ||z||_2,  where ||z_norm||_2 = 1
+   ```
 4. **Metric Verification**: Identities are matched against enrolled vectors using cosine similarity:
-   $$\mathcal{S}(\hat{\mathbf{z}}_q, \hat{\mathbf{z}}_k) = \hat{\mathbf{z}}_q^\top \hat{\mathbf{z}}_k = \cos(\theta_{qk})$$
-   A candidate match is confirmed if $\mathcal{S} \ge \tau$ (default threshold $\tau = 0.50$).
+   ```text
+   Similarity = dot(z_query, z_enrolled) = cos(θ)
+   ```
+   A candidate match is confirmed if `Similarity >= threshold` (the app's default threshold is `0.50`).
 
 ![ArcFace Training & Inference Pipeline](assets/research/arcface_pipeline_framework.png)
 *Figure 2: ArcFace loss computation pipeline with normalized feature embeddings and class weight centers (adapted from Deng et al., CVPR 2019).*
@@ -47,7 +53,7 @@ Sub-70ms inference loop running on an **NVIDIA GeForce RTX 3050 Laptop GPU** (CU
 *Figure 3: Live webcam stream, bounding box overlay, and detection activity telemetry.*
 
 ### Identity Inspection & Verification
-High-confidence verification on portrait representations (**99.8% Cosine Similarity**, **89.6% YOLO Confidence**) and unconstrained indoor conditions.
+The screenshot shows one example similarity score (**99.8%**) and detector confidence (**89.6%**); these are not accuracy or benchmark results.
 
 ![Figure 4: Face Recognition Inspection](assets/screenshots/fig4_high_confidence_verification.png)
 *Figure 4: Empirical identity matching with dual confidence indicators.*
@@ -55,18 +61,24 @@ High-confidence verification on portrait representations (**99.8% Cosine Similar
 ### Evaluation Protocols & Metrics
 
 1. **YOLO Face Detection Evaluation**:
-   - **Intersection over Union (IoU)**: Validates predicted bounding box $\mathcal{B}_{\text{pred}}$ against ground truth $\mathcal{B}_{\text{gt}}$:
-     $$\text{IoU} = \frac{|\mathcal{B}_{\text{pred}} \cap \mathcal{B}_{\text{gt}}|}{|\mathcal{B}_{\text{pred}} \cup \mathcal{B}_{\text{gt}}|}$$
-   - **Detection Precision & Recall**: Evaluated at standard detection confidence threshold $\ge 0.50$.
+   - **Intersection over Union (IoU)**: Validates predicted bounding box `B_pred` against ground truth `B_gt`:
+     ```text
+     IoU = Area(B_pred ∩ B_gt) / Area(B_pred ∪ B_gt)
+     ```
+   - **Detection Precision & Recall**: Evaluated at standard detection confidence threshold `>= 0.50`.
    - **Mean Average Precision (mAP@0.50 & mAP@0.50:0.95)**: Area under the Precision-Recall curve across single and multi-threshold IoUs.
 
 2. **ArcFace Verification & Identification Protocols**:
-   - **1:1 Face Verification**: Validates whether two biometric captures represent the same subject by evaluating cosine similarity $\mathcal{S}(\hat{\mathbf{z}}_1, \hat{\mathbf{z}}_2) \ge \tau$.
-     - $\tau = 0.50$: Balanced operating threshold for real-time monitoring and general access.
-     - $\tau = 0.65$: High-security threshold minimizing False Acceptance Rate ($\text{FAR} < 10^{-4}$).
-   - **1:N Face Identification**: Queries an unknown face embedding $\hat{\mathbf{z}}_q$ against an enrolled gallery $\{\hat{\mathbf{z}}_1, \dots, \hat{\mathbf{z}}_N\}$ via rank-1 nearest neighbor search:
-     $$\hat{k} = \arg\max_{k \in \{1,\dots,N\}} (\hat{\mathbf{z}}_q^\top \hat{\mathbf{z}}_k)$$
-   - **Standard LFW Evaluation Protocol**: Evaluated on 6,000 paired comparisons (3,000 genuine + 3,000 impostor) under 10-fold cross-validation. Detailed metrics guide available in [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md).
+   - **1:1 Face Verification**: Validates whether two biometric captures represent the same subject by evaluating cosine similarity:
+     ```text
+     Similarity(z1, z2) = dot(z1, z2) >= threshold
+     ```
+     - `threshold = 0.50` is an example default, not a validated operating point. Select thresholds on a calibration set and report FAR/FRR on a separate test set; a fixed cosine threshold does not guarantee a particular FAR.
+   - **1:N Face Identification**: Queries an unknown face embedding `z_query` against an enrolled gallery `{z_1, ..., z_N}` via rank-1 nearest neighbor search:
+     ```text
+     Matched Identity = argmax_k (dot(z_query, z_k))
+     ```
+   - **Standard LFW Evaluation Protocol**: 6,000 paired comparisons (3,000 genuine + 3,000 impostor) under 10-fold cross-validation; diagnostic only for this LFW-trained checkpoint. See [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md).
 
 ---
 
@@ -105,9 +117,9 @@ Both models were trained for 100 epochs with checkpointed training histories, lo
 
 ### YOLOv11 Face Detector (100 Epochs)
 
-- **Box Loss**: Decreased from `1.886` $\to$ **`1.286`** (Train) / `1.667` $\to$ **`1.348`** (Val)
-- **Classification Loss**: Decreased from `1.763` $\to$ **`0.610`** (Train) / `1.130` $\to$ **`0.619`** (Val)
-- **Distribution Focal Loss (DFL)**: Decreased from `1.224` $\to$ **`0.970`** (Train) / `1.090` $\to$ **`0.992`** (Val)
+- **Box Loss**: Decreased from `1.886` → **`1.286`** (Train) / `1.667` → **`1.348`** (Val)
+- **Classification Loss**: Decreased from `1.763` → **`0.610`** (Train) / `1.130` → **`0.619`** (Val)
+- **Distribution Focal Loss (DFL)**: Decreased from `1.224` → **`0.970`** (Train) / `1.090` → **`0.992`** (Val)
 - **Validation Precision**: **`85.1%`** (Peak: `85.2%`)
 - **Validation Recall**: **`58.3%`** (Peak: `58.5%`)
 - **Detection Accuracy**: **`67.2% mAP@0.50`** and **`37.0% mAP@0.50:0.95`**
@@ -126,7 +138,7 @@ Both models were trained for 100 epochs with checkpointed training histories, lo
 
 ### ArcFace ResNet-50 Feature Extractor Convergence
 
-Trained on 5,749 identity classes with additive angular margin penalty ($s = 64.0, m = 0.50$) using SGD with MultiStepLR step decay at epochs 20, 35, and 45.
+Trained on 5,749 identity classes with additive angular margin penalty (`scale = 64.0`, `margin = 0.50`) using SGD with MultiStepLR step decay at epochs 20, 35, and 45.
 
 ![Figure 7: ArcFace Loss Curve](assets/research/arcface_training_loss_curve.png)
 *Figure 7: ArcFace cross-entropy loss convergence and step learning rate schedule.*
@@ -210,10 +222,13 @@ All protected endpoints require the `X-API-Key` header:
 
 | Dataset | Scope & Modality | Role in System | Access / Benchmark Guide |
 |:--------|:-----------------|:---------------|:-------------------------|
-| **[LFW (Labeled Faces in the Wild)](http://vis-www.cs.umass.edu/lfw/)** | 13,233 web-scale face portraits, 5,749 identity classes | ArcFace training and 1:1 face verification standard | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+| **[LFW (Labeled Faces in the Wild)](http://vis-www.cs.umass.edu/lfw/)** | 13,233 web-scale face portraits, 5,749 identity classes | ArcFace training and standard protocol; not an independent test when identities overlap training | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+| **[CFP-W / CFP-FP](http://www.cfpw.io/)** | 7,000 frontal-profile pairs across 500 identities | External, identity-disjoint 10-fold verification evaluation | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
 | **[WIDER FACE](http://shuoyang1213.me/WIDERFACE/)** | 32,203 images, 393,703 bounding boxes (Easy / Medium / Hard) | YOLO face detection baseline and scale benchmarking | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
 | **[CASIA-WebFace](http://www.cbsr.ia.ac.cn/english/CASIA-WebFace-Database.html)** | 494,414 images across 10,575 subjects | Medium-scale deep feature representation benchmark | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
 | **[MS-Celeb-1M (MS1MV2)](https://github.com/deepinsight/insightface)** | 5.8M images across 85,742 identities | Large-scale ArcFace representation benchmark | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+
+The local ArcFace checkpoint records an LFW training path in its metadata. Treat LFW scores as potentially contaminated; use CFP-W's official FP protocol for an external verification result.
 
 ---
 
