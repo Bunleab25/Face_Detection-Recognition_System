@@ -55,4 +55,47 @@ Full pipeline execution: **1080p Video Ingest → YOLO Face Detection → Crop &
 | Environment | End-to-End Latency | Pipeline Throughput | Real-Time Capable (>24 FPS) |
 |:------------|:-------------------|:-------------------|:-----------------------------|
 | **CUDA (RTX 3050 Laptop GPU)** | **19.85 ms** | **50.4 FPS** | **YES (Real-Time)** |
-| **CPU (Intel Core i5-11400H)** | 59.74 ms | 16.7 FPS | Fallback Mode |
+| **CPU (Intel Core i5-12450H)** | 59.74 ms | 16.7 FPS | Fallback Mode |
+
+---
+
+## 5. Model Training & Learning Loss Curves
+
+The model weights include full 100-epoch training history and validation trajectories.
+
+### YOLOv11 Face Detector Training & Convergence (100 Epochs)
+
+| Metric | Initial (Epoch 1) | Final (Epoch 100) | Peak |
+|:-------|:------------------|:------------------|:-----|
+| **Train Box Loss (IoU)** | 1.886 | **1.286** | Min: 1.286 |
+| **Train Cls Loss (BCE)** | 1.763 | **0.610** | Min: 0.610 |
+| **Train DFL Loss** | 1.224 | **0.970** | Min: 0.968 |
+| **Val Box Loss** | 1.667 | **1.348** | Min: 1.347 |
+| **Val Cls Loss** | 1.130 | **0.619** | Min: 0.619 |
+| **Val DFL Loss** | 1.090 | **0.992** | Min: 0.992 |
+| **Precision (B)** | 73.4% | **85.1%** | **85.2%** |
+| **Recall (B)** | 41.5% | **58.3%** | **58.5%** |
+| **mAP @ 0.50 (B)** | 47.2% | **67.2%** | **67.2%** |
+| **mAP @ 0.50:0.95 (B)** | 22.7% | **37.0%** | **37.0%** |
+
+![YOLO Training Curves](../assets/research/yolo_training_loss_curves.png)
+*Figure 5.1: 6-panel training curves showing Box/Cls/DFL losses, precision/recall, mAP metrics, and SGD learning rate decay.*
+
+#### Precision-Recall, F1-Score & Confusion Matrix
+
+| Precision-Recall Curve | F1-Confidence Curve |
+|:---:|:---:|
+| ![PR Curve](../assets/research/yolo_pr_curve.png) | ![F1 Curve](../assets/research/yolo_f1_curve.png) |
+
+![Confusion Matrix](../assets/research/yolo_confusion_matrix.png)
+*Figure 5.2: Normalized detection confusion matrix (Face vs Background).*
+
+---
+
+### ArcFace ResNet-50 Feature Extractor Convergence
+
+Trained on 5,749 identity classes with additive angular margin penalty ($s = 64.0, m = 0.50$) and MultiStepLR decay at epochs 20, 35, and 45.
+
+![ArcFace Loss Curve](../assets/research/arcface_training_loss_curve.png)
+*Figure 5.3: ArcFace cross-entropy loss convergence and learning rate step schedule.*
+

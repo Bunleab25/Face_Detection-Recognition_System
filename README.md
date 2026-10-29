@@ -83,7 +83,41 @@ Cosine distance calculation across 512-dimensional hyperspherical embeddings:
 
 ---
 
-## 4. Getting Started
+## 4. Empirical Model Training & Learning Curves
+
+Both models were trained for 100 epochs with checkpointed training histories, loss convergence trajectories, and validation performance indicators.
+
+### YOLOv11 Face Detector (100 Epochs)
+
+- **Box Loss**: Decreased from `1.886` $\to$ **`1.286`** (Train) / `1.667` $\to$ **`1.348`** (Val)
+- **Classification Loss**: Decreased from `1.763` $\to$ **`0.610`** (Train) / `1.130` $\to$ **`0.619`** (Val)
+- **Distribution Focal Loss (DFL)**: Decreased from `1.224` $\to$ **`0.970`** (Train) / `1.090` $\to$ **`0.992`** (Val)
+- **Validation Precision**: **`85.1%`** (Peak: `85.2%`)
+- **Validation Recall**: **`58.3%`** (Peak: `58.5%`)
+- **Detection Accuracy**: **`67.2% mAP@0.50`** and **`37.0% mAP@0.50:0.95`**
+
+![Figure 5: YOLOv11 Training Curves](assets/research/yolo_training_loss_curves.png)
+*Figure 5: 100-epoch training and validation loss progression, precision/recall trajectories, mAP evaluation, and learning rate schedule.*
+
+#### YOLO Validation Diagnostics: PR, F1, and Confusion Matrix
+
+| Precision-Recall Curve | F1-Score vs Confidence |
+|:---:|:---:|
+| ![PR Curve](assets/research/yolo_pr_curve.png) | ![F1 Curve](assets/research/yolo_f1_curve.png) |
+
+![Confusion Matrix](assets/research/yolo_confusion_matrix.png)
+*Figure 6: Normalized detection confusion matrix (Face vs Background).*
+
+### ArcFace ResNet-50 Feature Extractor Convergence
+
+Trained on 5,749 identity classes with additive angular margin penalty ($s = 64.0, m = 0.50$) using SGD with MultiStepLR step decay at epochs 20, 35, and 45.
+
+![Figure 7: ArcFace Loss Curve](assets/research/arcface_training_loss_curve.png)
+*Figure 7: ArcFace cross-entropy loss convergence and step learning rate schedule.*
+
+---
+
+## 5. Getting Started
 
 ### Prerequisites
 - Python 3.9+ (Python 3.11 recommended)
@@ -117,7 +151,7 @@ The web dashboard is served at **http://127.0.0.1:8000** (Default API key: `my-s
 
 ---
 
-## 5. REST API Endpoints
+## 6. REST API Endpoints
 
 All protected endpoints require the `X-API-Key` header:
 
@@ -130,7 +164,7 @@ All protected endpoints require the `X-API-Key` header:
 
 ---
 
-## 6. Project Layout
+## 7. Project Layout
 
 ```text
 ├── app/
