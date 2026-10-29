@@ -52,6 +52,22 @@ High-confidence verification on portrait representations (**99.8% Cosine Similar
 ![Figure 4: Face Recognition Inspection](assets/screenshots/fig4_high_confidence_verification.png)
 *Figure 4: Empirical identity matching with dual confidence indicators.*
 
+### Evaluation Protocols & Metrics
+
+1. **YOLO Face Detection Evaluation**:
+   - **Intersection over Union (IoU)**: Validates predicted bounding box $\mathcal{B}_{\text{pred}}$ against ground truth $\mathcal{B}_{\text{gt}}$:
+     $$\text{IoU} = \frac{|\mathcal{B}_{\text{pred}} \cap \mathcal{B}_{\text{gt}}|}{|\mathcal{B}_{\text{pred}} \cup \mathcal{B}_{\text{gt}}|}$$
+   - **Detection Precision & Recall**: Evaluated at standard detection confidence threshold $\ge 0.50$.
+   - **Mean Average Precision (mAP@0.50 & mAP@0.50:0.95)**: Area under the Precision-Recall curve across single and multi-threshold IoUs.
+
+2. **ArcFace Verification & Identification Protocols**:
+   - **1:1 Face Verification**: Validates whether two biometric captures represent the same subject by evaluating cosine similarity $\mathcal{S}(\hat{\mathbf{z}}_1, \hat{\mathbf{z}}_2) \ge \tau$.
+     - $\tau = 0.50$: Balanced operating threshold for real-time monitoring and general access.
+     - $\tau = 0.65$: High-security threshold minimizing False Acceptance Rate ($\text{FAR} < 10^{-4}$).
+   - **1:N Face Identification**: Queries an unknown face embedding $\hat{\mathbf{z}}_q$ against an enrolled gallery $\{\hat{\mathbf{z}}_1, \dots, \hat{\mathbf{z}}_N\}$ via rank-1 nearest neighbor search:
+     $$\hat{k} = \arg\max_{k \in \{1,\dots,N\}} (\hat{\mathbf{z}}_q^\top \hat{\mathbf{z}}_k)$$
+   - **Standard LFW Evaluation Protocol**: Evaluated on 6,000 paired comparisons (3,000 genuine + 3,000 impostor) under 10-fold cross-validation. Detailed metrics guide available in [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md).
+
 ---
 
 ## 3. Empirical Hardware Benchmarks
@@ -188,7 +204,20 @@ All protected endpoints require the `X-API-Key` header:
 
 ---
 
-## 7. References
+## 7. Reference Datasets & Citations
+
+### Reference Datasets
+
+| Dataset | Scope & Modality | Role in System | Access / Benchmark Guide |
+|:--------|:-----------------|:---------------|:-------------------------|
+| **[LFW (Labeled Faces in the Wild)](http://vis-www.cs.umass.edu/lfw/)** | 13,233 web-scale face portraits, 5,749 identity classes | ArcFace training and 1:1 face verification standard | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+| **[WIDER FACE](http://shuoyang1213.me/WIDERFACE/)** | 32,203 images, 393,703 bounding boxes (Easy / Medium / Hard) | YOLO face detection baseline and scale benchmarking | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+| **[CASIA-WebFace](http://www.cbsr.ia.ac.cn/english/CASIA-WebFace-Database.html)** | 494,414 images across 10,575 subjects | Medium-scale deep feature representation benchmark | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+| **[MS-Celeb-1M (MS1MV2)](https://github.com/deepinsight/insightface)** | 5.8M images across 85,742 identities | Large-scale ArcFace representation benchmark | [`docs/REFERENCE_DATASETS.md`](docs/REFERENCE_DATASETS.md) |
+
+---
+
+### Academic Citations
 
 ```bibtex
 @inproceedings{deng2019arcface,
@@ -197,6 +226,22 @@ All protected endpoints require the `X-API-Key` header:
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
   pages={4690--4699},
   year={2019}
+}
+
+@inproceedings{yang2016wider,
+  title={WIDER FACE: A Face Detection Benchmark},
+  author={Yang, Shuo and Luo, Ping and Loy, Chen Change and Tang, Xiaoou},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={5525--5533},
+  year={2016}
+}
+
+@techreport{huang2008lfw,
+  title={Labeled Faces in the Wild: A Database for Studying Face Recognition in Unconstrained Environments},
+  author={Huang, Gary B. and Ramesh, Manu and Berg, Tamara and Learned-Miller, Erik},
+  institution={University of Massachusetts, Amherst},
+  number={07-49},
+  year={2008}
 }
 
 @inproceedings{he2016deep,

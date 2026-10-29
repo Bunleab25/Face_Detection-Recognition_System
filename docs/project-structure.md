@@ -25,6 +25,7 @@ outside version control. Model weights are tracked with Git LFS.
 ## Documentation
 
 - [Empirical hardware benchmarks](BENCHMARKS.md)
+- [Reference datasets & evaluation protocols](REFERENCE_DATASETS.md)
 - [ArcFace quick start](arcface_quickstart.md)
 - [Face alignment guide](face_alignment_guide.md)
 - [ArcFace architecture reference](arcface_architecture_reference.md)
