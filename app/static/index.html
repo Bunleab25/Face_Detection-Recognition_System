@@ -1,369 +1,1071 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition System</title>
+    <title>FaceScan AI - Detection & Recognition System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .container { display: flex; gap: 20px; }
-        .box { flex: 1; border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
-        h2 { margin-top: 0; }
-        .result { margin-top: 10px; font-weight: bold; }
-        img { max-width: 100%; margin-top: 10px; border-radius: 4px; }
-        button { cursor: pointer; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; }
-        button:hover { background: #0056b3; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
+        }
     </style>
 </head>
-<body>
-    <h1>Face Recognition System</h1>
-    <p>
-        <label for="apiKey">API Key:</label><br>
-        <input type="password" id="apiKey" autocomplete="off" required>
-    </p>
-    
-    <div class="container">
-        <!-- Enrollment Section -->
-        <div class="box">
-            <h2>1. Enroll Person</h2>
-            <form id="enrollForm">
-                <p>
-                    <label>Name:</label><br>
-                    <input type="text" id="enrollName" required placeholder="e.g. John Doe">
-                </p>
-                
-                <div style="margin-bottom: 10px;">
-                    <label><strong>Photo Source:</strong></label><br>
-                    <label><input type="radio" name="enrollSource" value="upload" checked onchange="toggleEnrollSource()"> Upload File</label>
-                    <label><input type="radio" name="enrollSource" value="webcam" onchange="toggleEnrollSource()"> Use Webcam</label>
-                </div>
+<body class="min-h-full flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
 
-                <!-- Upload UI -->
-                <div id="enrollUploadUI">
-                    <input type="file" id="enrollFile" accept="image/*">
-                </div>
-
-                <!-- Webcam UI -->
-                <div id="enrollWebcamUI" style="display:none;">
-                    <div style="position: relative; width: 320px; height: 240px; background: #000; margin-bottom: 10px;">
-                        <video id="enrollVideo" width="320" height="240" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display:none;"></video>
-                        <img id="enrollPreview" width="320" height="240" style="width: 100%; height: 100%; object-fit: cover; display:none;">
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 p-0.5 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
                     </div>
-                    <canvas id="enrollCanvas" width="320" height="240" style="display:none;"></canvas>
-                    
-                    <button type="button" id="startEnrollCamBtn" onclick="startEnrollCamera()">Start Camera</button>
-                    <button type="button" id="captureEnrollBtn" onclick="captureEnrollPhoto()" style="display:none;">Capture Photo</button>
-                    <button type="button" id="retakeEnrollBtn" onclick="retakeEnrollPhoto()" style="display:none;">Retake</button>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                        FaceScan <span class="text-indigo-400 text-xs px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 font-semibold uppercase tracking-wider">AI</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">YOLO Face Detection & ArcFace Recognition</p>
+                </div>
+            </div>
+
+            <!-- Stats & Settings -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Device Pill -->
+                <div id="deviceBadge" class="hidden sm:flex items-center space-x-2 text-xs py-1.5 px-3 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="deviceText">Loading system...</span>
                 </div>
 
-                <br>
-                <button type="submit" style="margin-top: 10px;">Enroll</button>
-            </form>
-            <div id="enrollResult" class="result"></div>
-        </div>
+                <!-- Database Counter -->
+                <div class="flex items-center space-x-1.5 text-xs py-1.5 px-3 rounded-full bg-indigo-950/40 border border-indigo-800/40 text-indigo-300">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="enrolledCountText">0 Enrolled</span>
+                </div>
 
-        <!-- Recognition Section -->
-        <div class="box">
-            <h2>2. Recognize Person</h2>
-            <form id="recognizeForm">
-                <p>
-                    <label>Upload Photo to Check:</label><br>
-                    <input type="file" id="recognizeFile" accept="image/*" required>
-                </p>
-                <button type="submit">Recognize</button>
-            </form>
-            <div id="recognizeResult" class="result"></div>
-            <img id="previewImg" style="display:none;">
-        </div>
-    </div>
-
-    <!-- Real-Time Webcam Section -->
-    <div class="container" style="margin-top: 20px;">
-        <div class="box">
-            <h2>3. Real-Time Webcam</h2>
-            <div style="position: relative; display: inline-block;">
-                <video id="webcam" width="640" height="480" autoplay playsinline style="border: 1px solid #ccc; border-radius: 4px;"></video>
-                <canvas id="overlay" width="640" height="480" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+                <!-- API Key Button -->
+                <button onclick="openApiKeyModal()" id="apiKeyBtn" class="flex items-center space-x-2 text-xs py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    <span id="apiKeyBtnLabel">API Key</span>
+                </button>
             </div>
-            <br>
-            <button id="startCamBtn">Start Webcam</button>
-            <button id="stopCamBtn" style="background: #dc3545; display: none;">Stop Webcam</button>
-            <div id="camResult" class="result"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center space-x-2 border-b border-slate-800 pb-3 mb-6 overflow-x-auto">
+            <button onclick="switchTab('webcam')" id="tab-webcam" class="tab-btn active flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Live Real-Time Stream</span>
+            </button>
+            <button onclick="switchTab('scanner')" id="tab-scanner" class="tab-btn flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+                <span>Image Face Scanner</span>
+            </button>
+            <button onclick="switchTab('enroll')" id="tab-enroll" class="tab-btn flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                <span>Enroll New Identity</span>
+            </button>
+            <button onclick="switchTab('database')" id="tab-database" class="tab-btn flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                </svg>
+                <span>Identity Database</span>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: REAL-TIME WEBCAM STREAM -->
+        <!-- ========================================== -->
+        <div id="view-webcam" class="tab-content flex-1 flex flex-col lg:flex-row gap-6">
+            <!-- Left: Video Canvas Area -->
+            <div class="flex-1 glass-panel rounded-2xl p-5 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500" id="liveIndicator"></span>
+                        <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase">Live Camera Feed</h2>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs text-slate-400">
+                        <span id="fpsBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">Idle</span>
+                    </div>
+                </div>
+
+                <!-- Video Viewport -->
+                <div class="relative w-full aspect-[4/3] max-w-2xl bg-slate-900/90 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center shadow-2xl">
+                    <video id="webcam" class="w-full h-full object-cover transform" autoplay playsinline muted></video>
+                    <canvas id="overlay" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                    
+                    <!-- Placeholder when camera is off -->
+                    <div id="camPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-950/80">
+                        <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-4 text-slate-500">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-base font-medium text-slate-300 mb-1">Camera Offline</h3>
+                        <p class="text-xs text-slate-500 max-w-xs mb-4">Start your webcam to run real-time YOLO face detection and ArcFace identity matching.</p>
+                        <button onclick="startWebcam()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition">
+                            Start Live Camera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Controls Bar -->
+                <div class="w-full max-w-2xl mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
+                    <div class="flex items-center space-x-2">
+                        <button id="startCamBtn" onclick="startWebcam()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                            <span>Start Camera</span>
+                        </button>
+                        <button id="stopCamBtn" onclick="stopWebcam()" class="hidden px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+                            <span>Stop Camera</span>
+                        </button>
+                        <button onclick="toggleMirror()" id="mirrorBtn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition">
+                            Mirror
+                        </button>
+                    </div>
+
+                    <!-- Sensitivity Slider -->
+                    <div class="flex items-center space-x-3 text-xs text-slate-300">
+                        <label for="thresholdSlider" class="text-slate-400">Match Threshold:</label>
+                        <input id="thresholdSlider" type="range" min="0.30" max="0.80" step="0.05" value="0.50" oninput="updateThreshold(this.value)" class="w-24 accent-indigo-500">
+                        <span id="thresholdVal" class="font-mono text-indigo-400 w-8">0.50</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Activity & Live Feed Log -->
+            <div class="w-full lg:w-80 glass-panel rounded-2xl p-5 flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold tracking-wide text-slate-200 uppercase">Detection Activity</h3>
+                    <button onclick="clearEventLogs()" class="text-xs text-slate-500 hover:text-slate-300 transition">Clear</button>
+                </div>
+
+                <!-- Event Stream -->
+                <div id="activityLog" class="flex-1 overflow-y-auto space-y-2.5 max-h-[480px] pr-1">
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500">
+                        No detections recorded yet. Start camera to detect faces.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: IMAGE FACE SCANNER -->
+        <!-- ========================================== -->
+        <div id="view-scanner" class="tab-content hidden flex-1 flex flex-col lg:flex-row gap-6">
+            <!-- Upload & Scan Zone -->
+            <div class="flex-1 glass-panel rounded-2xl p-6 flex flex-col">
+                <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase mb-4">Single Face Inspection</h2>
+                
+                <!-- Dropzone -->
+                <div id="scanDropzone" onclick="document.getElementById('scanFileInput').click()" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition bg-slate-900/40 hover:bg-slate-900/80 group">
+                    <input type="file" id="scanFileInput" accept="image/*" class="hidden" onchange="handleScanFileSelect(event)">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-950/60 border border-indigo-800/40 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition mb-3">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-slate-200">Click to upload or drag & drop</p>
+                    <p class="text-xs text-slate-500 mt-1">PNG, JPG, JPEG, WEBP</p>
+                </div>
+
+                <!-- Preview & Result Area -->
+                <div id="scanResultArea" class="hidden mt-6 flex-1 flex flex-col md:flex-row gap-6 items-center">
+                    <div class="relative max-w-sm w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-900 shadow-xl">
+                        <img id="scanPreviewImg" class="w-full object-contain max-h-80" alt="Scanned image">
+                        <canvas id="scanOverlayCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                    </div>
+                    
+                    <!-- Stats Card -->
+                    <div class="flex-1 w-full bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-center space-y-4">
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Matched Identity</span>
+                            <h3 id="scanMatchName" class="text-2xl font-bold text-white mt-1">Unknown</h3>
+                        </div>
+
+                        <!-- Progress: Similarity -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">ArcFace Cosine Similarity</span>
+                                <span id="scanScorePercent" class="font-bold text-indigo-400 font-mono">0.0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                                <div id="scanScoreBar" class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Progress: YOLO Confidence -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">YOLO Face Detection Confidence</span>
+                                <span id="scanDetConf" class="font-bold text-cyan-400 font-mono">0.0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                                <div id="scanDetBar" class="bg-cyan-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="scanMessageNotice" class="text-xs p-3 rounded-lg bg-slate-800/80 text-slate-300">
+                            Face processed successfully.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: ENROLL NEW IDENTITY -->
+        <!-- ========================================== -->
+        <div id="view-enroll" class="tab-content hidden flex-1 max-w-3xl mx-auto w-full">
+            <div class="glass-panel rounded-2xl p-6 sm:p-8">
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold text-slate-100">Enroll New Person</h2>
+                    <p class="text-xs text-slate-400 mt-1">Register a person into the face recognition SQLite database with a 512-dim ArcFace embedding.</p>
+                </div>
+
+                <form id="enrollForm" onsubmit="handleEnrollSubmit(event)" class="space-y-6">
+                    <!-- Name Input -->
+                    <div>
+                        <label for="enrollNameInput" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Full Name / Label *</label>
+                        <input type="text" id="enrollNameInput" required placeholder="e.g. Bunleab Chea" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition text-sm">
+                    </div>
+
+                    <!-- Source Toggle -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Photo Source</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="setEnrollMode('webcam')" id="enrollModeWebcamBtn" class="py-2.5 px-4 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-200 text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                <span>Snap with Webcam</span>
+                            </button>
+                            <button type="button" onclick="setEnrollMode('upload')" id="enrollModeUploadBtn" class="py-2.5 px-4 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <span>Upload Image File</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Webcam Capture Container -->
+                    <div id="enrollWebcamBox" class="flex flex-col items-center p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                        <div class="relative w-72 h-72 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 mb-4 flex items-center justify-center shadow-lg">
+                            <video id="enrollVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                            <img id="enrollSnapshotPreview" class="hidden w-full h-full object-cover" alt="Captured snapshot">
+                            <canvas id="enrollCanvas" class="hidden"></canvas>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <button type="button" id="startEnrollCamBtn" onclick="startEnrollCam()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition">Start Camera</button>
+                            <button type="button" id="snapEnrollCamBtn" onclick="snapEnrollPhoto()" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow transition">Take Photo</button>
+                            <button type="button" id="retakeEnrollCamBtn" onclick="retakeEnrollPhoto()" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition">Retake</button>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Container -->
+                    <div id="enrollUploadBox" class="hidden p-6 border-2 border-dashed border-slate-700 rounded-xl text-center cursor-pointer hover:border-indigo-500 transition" onclick="document.getElementById('enrollFileInput').click()">
+                        <input type="file" id="enrollFileInput" accept="image/*" class="hidden" onchange="handleEnrollFile(event)">
+                        <svg class="w-8 h-8 mx-auto text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                        <p id="enrollFileName" class="text-xs font-medium text-slate-300">Choose image file with a clear face</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="enrollSubmitBtn" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <span>Enroll Identity</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: IDENTITY DATABASE MANAGER -->
+        <!-- ========================================== -->
+        <div id="view-database" class="tab-content hidden flex-1 glass-panel rounded-2xl p-6 flex flex-col">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase">Enrolled Identities Database</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Manage enrolled profiles registered in SQLite (<code class="text-slate-300">face_recognition.db</code>).</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="userSearchInput" oninput="filterUsers(this.value)" placeholder="Search person..." class="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <button onclick="loadUsersTable()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition flex items-center space-x-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="flex-1 overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/40">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-900/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+                        <tr>
+                            <th class="py-3 px-4">ID</th>
+                            <th class="py-3 px-4">Profile</th>
+                            <th class="py-3 px-4">Name</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-slate-500">Loading enrolled identities...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-slate-800 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-100">API Key Authentication</h3>
+                </div>
+                <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            
+            <p class="text-xs text-slate-400 mb-4">
+                The API key protects enrollment and recognition endpoints via header <code class="text-slate-300">X-API-Key</code>. Saved securely in your browser's LocalStorage.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase">API Key</label>
+                    <input type="password" id="modalApiKeyInput" placeholder="Enter FACE_API_KEY..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-indigo-500">
+                </div>
+                <div id="modalKeyFeedback" class="text-xs hidden p-2.5 rounded-lg"></div>
+
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button onclick="closeApiKeyModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg">Cancel</button>
+                    <button onclick="saveAndVerifyApiKey()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow">Test & Save</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Application Client Logic -->
     <script>
-        function authenticatedFetch(url, options) {
+        // State variables
+        let currentApiKey = localStorage.getItem('FACE_API_KEY') || 'my-secret-key-123';
+        let matchThreshold = 0.50;
+        let isMirror = false;
+        let allUsersCache = [];
+
+        // Webcam stream variables
+        let webcamStream = null;
+        let webcamInterval = null;
+        let isProcessingFrame = false;
+        let lastFrameTime = 0;
+
+        // Enrollment variables
+        let enrollMode = 'webcam';
+        let enrollCamStream = null;
+        let enrollCapturedBlob = null;
+        let enrollSelectedFile = null;
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        async function initApp() {
+            // Populate modal input
+            document.getElementById('modalApiKeyInput').value = currentApiKey;
+            updateApiKeyBadge();
+            
+            // Check system status
+            await fetchSystemStatus();
+            
+            // Preload database
+            await loadUsersTable();
+        }
+
+        // ==========================================
+        // SYSTEM STATUS & API KEY LOGIC
+        // ==========================================
+        async function fetchSystemStatus() {
+            try {
+                const res = await fetch('/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    const deviceEl = document.getElementById('deviceText');
+                    if (data.cuda_available) {
+                        deviceEl.textContent = `GPU: ${data.gpu_name || 'CUDA'} (${data.device})`;
+                        deviceEl.parentElement.classList.remove('hidden');
+                    } else {
+                        deviceEl.textContent = `CPU Mode (${data.device})`;
+                        deviceEl.parentElement.classList.remove('hidden');
+                    }
+                    document.getElementById('enrolledCountText').textContent = `${data.enrolled_count} Enrolled`;
+                }
+            } catch (err) {
+                console.error("Failed to fetch system status:", err);
+            }
+        }
+
+        function openApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+            document.getElementById('modalApiKeyInput').focus();
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        async function saveAndVerifyApiKey() {
+            const key = document.getElementById('modalApiKeyInput').value.trim();
+            const feedback = document.getElementById('modalKeyFeedback');
+            feedback.className = 'text-xs p-2.5 rounded-lg block';
+
+            try {
+                const res = await fetch('/api/verify-key', {
+                    headers: { 'X-API-Key': key }
+                });
+
+                if (res.ok) {
+                    currentApiKey = key;
+                    localStorage.setItem('FACE_API_KEY', key);
+                    feedback.className += ' bg-emerald-950/60 text-emerald-300 border border-emerald-800';
+                    feedback.textContent = '✔ Key verified and saved successfully!';
+                    updateApiKeyBadge();
+                    setTimeout(() => {
+                        closeApiKeyModal();
+                        loadUsersTable();
+                    }, 1000);
+                } else {
+                    feedback.className += ' bg-rose-950/60 text-rose-300 border border-rose-800';
+                    feedback.textContent = '❌ Key verification failed (HTTP ' + res.status + ')';
+                }
+            } catch (err) {
+                feedback.className += ' bg-rose-950/60 text-rose-300 border border-rose-800';
+                feedback.textContent = '❌ Network error testing key';
+            }
+        }
+
+        function updateApiKeyBadge() {
+            const btn = document.getElementById('apiKeyBtn');
+            const label = document.getElementById('apiKeyBtnLabel');
+            if (currentApiKey) {
+                label.textContent = 'Key Active';
+                btn.className = 'flex items-center space-x-2 text-xs py-1.5 px-3 rounded-lg bg-emerald-950/50 border border-emerald-800 text-emerald-300 transition';
+            } else {
+                label.textContent = 'Set API Key';
+                btn.className = 'flex items-center space-x-2 text-xs py-1.5 px-3 rounded-lg bg-amber-950/50 border border-amber-800 text-amber-300 transition';
+            }
+        }
+
+        function authFetch(url, options = {}) {
             const headers = new Headers(options.headers || {});
-            headers.set('X-API-Key', document.getElementById('apiKey').value);
+            if (currentApiKey) {
+                headers.set('X-API-Key', currentApiKey);
+            }
             return fetch(url, { ...options, headers });
         }
 
-        // --- Enrollment Webcam Logic ---
-        let enrollStream = null;
-        let enrollBlob = null;
+        // ==========================================
+        // TAB SWITCHING
+        // ==========================================
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/30');
+                btn.classList.add('text-slate-400');
+            });
+            document.querySelectorAll('.tab-content').forEach(view => view.classList.add('hidden'));
 
-        function toggleEnrollSource() {
-            const source = document.querySelector('input[name="enrollSource"]:checked').value;
-            document.getElementById('enrollUploadUI').style.display = source === 'upload' ? 'block' : 'none';
-            document.getElementById('enrollWebcamUI').style.display = source === 'webcam' ? 'block' : 'none';
-            
-            if (source === 'upload' && enrollStream) {
-                stopEnrollCamera();
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/30');
             }
+
+            const activeView = document.getElementById(`view-${tab}`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            if (tab === 'database') loadUsersTable();
         }
 
-        async function startEnrollCamera() {
+        // ==========================================
+        // TAB 1: REAL-TIME WEBCAM STREAM
+        // ==========================================
+        async function startWebcam() {
             try {
-                enrollStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.getElementById('enrollVideo');
-                video.srcObject = enrollStream;
-                video.style.display = 'block';
-                document.getElementById('enrollPreview').style.display = 'none';
+                webcamStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                const video = document.getElementById('webcam');
+                video.srcObject = webcamStream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                };
+
+                document.getElementById('camPlaceholder').classList.add('hidden');
+                document.getElementById('startCamBtn').classList.add('hidden');
+                document.getElementById('stopCamBtn').classList.remove('hidden');
+                document.getElementById('liveIndicator').className = 'inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
                 
-                document.getElementById('startEnrollCamBtn').style.display = 'none';
-                document.getElementById('captureEnrollBtn').style.display = 'inline-block';
-                document.getElementById('retakeEnrollBtn').style.display = 'none';
+                showToast('Camera stream active', 'info');
+
+                // Start inference interval: every 400ms
+                if (webcamInterval) clearInterval(webcamInterval);
+                webcamInterval = setInterval(processWebcamFrame, 400);
             } catch (err) {
-                alert("Error accessing webcam: " + err.message);
+                showToast(`Camera error: ${err.message}`, 'error');
+                console.error(err);
             }
         }
 
-        function stopEnrollCamera() {
-            if (enrollStream) {
-                enrollStream.getTracks().forEach(track => track.stop());
-                enrollStream = null;
+        function stopWebcam() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(t => t.stop());
+                webcamStream = null;
             }
-            document.getElementById('enrollVideo').style.display = 'none';
-            document.getElementById('startEnrollCamBtn').style.display = 'inline-block';
-            document.getElementById('captureEnrollBtn').style.display = 'none';
-            document.getElementById('retakeEnrollBtn').style.display = 'none';
-        }
-
-        function captureEnrollPhoto() {
-            const video = document.getElementById('enrollVideo');
-            const canvas = document.getElementById('enrollCanvas');
-            const preview = document.getElementById('enrollPreview');
-            
-            if (!enrollStream) return;
-
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            canvas.toBlob(blob => {
-                enrollBlob = blob;
-                preview.src = URL.createObjectURL(blob);
-                preview.style.display = 'block';
-                video.style.display = 'none';
-                
-                document.getElementById('captureEnrollBtn').style.display = 'none';
-                document.getElementById('retakeEnrollBtn').style.display = 'inline-block';
-            }, 'image/jpeg');
-        }
-
-        function retakeEnrollPhoto() {
-            enrollBlob = null;
-            document.getElementById('enrollPreview').style.display = 'none';
-            document.getElementById('enrollVideo').style.display = 'block';
-            document.getElementById('captureEnrollBtn').style.display = 'inline-block';
-            document.getElementById('retakeEnrollBtn').style.display = 'none';
-        }
-
-        // Handle Enrollment Submission
-        document.getElementById('enrollForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const resultDiv = document.getElementById('enrollResult');
-            const name = document.getElementById('enrollName').value;
-            const source = document.querySelector('input[name="enrollSource"]:checked').value;
-            
-            let fileToSend = null;
-
-            if (source === 'upload') {
-                const fileInput = document.getElementById('enrollFile');
-                if (fileInput.files.length > 0) {
-                    fileToSend = fileInput.files[0];
-                }
-            } else {
-                if (enrollBlob) {
-                    fileToSend = enrollBlob;
-                }
+            if (webcamInterval) {
+                clearInterval(webcamInterval);
+                webcamInterval = null;
             }
+            const video = document.getElementById('webcam');
+            video.srcObject = null;
 
-            if (!fileToSend) {
-                alert("Please select a file or capture a photo.");
-                return;
-            }
-
-            resultDiv.textContent = "Enrolling...";
-            
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('file', fileToSend, 'enrollment.jpg');
-
-            try {
-                const response = await authenticatedFetch('/enroll', { method: 'POST', body: formData });
-                const data = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.textContent = `✅ Success: ${data.message}`;
-                    resultDiv.style.color = "green";
-                    // Reset form
-                    document.getElementById('enrollName').value = '';
-                    document.getElementById('enrollFile').value = '';
-                    enrollBlob = null;
-                    if (source === 'webcam') {
-                        retakeEnrollPhoto(); // Reset UI to camera view
-                    }
-                } else {
-                    resultDiv.textContent = `❌ Error: ${data.detail}`;
-                    resultDiv.style.color = "red";
-                }
-            } catch (err) {
-                resultDiv.textContent = "❌ Network Error";
-            }
-        });
-
-        // Handle Recognition
-        document.getElementById('recognizeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const resultDiv = document.getElementById('recognizeResult');
-            const fileInput = document.getElementById('recognizeFile');
-            const previewImg = document.getElementById('previewImg');
-            
-            resultDiv.textContent = "Analyzing...";
-            
-            // Show preview
-            const file = fileInput.files[0];
-            previewImg.src = URL.createObjectURL(file);
-            previewImg.style.display = 'block';
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const response = await authenticatedFetch('/recognize', { method: 'POST', body: formData });
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const score = (data.score * 100).toFixed(1);
-                    if (data.match === "Unknown") {
-                        resultDiv.textContent = `❓ Unknown Person (Score: ${score}%)`;
-                        resultDiv.style.color = "orange";
-                    } else {
-                        resultDiv.textContent = `✅ Match: ${data.match} (${score}%)`;
-                        resultDiv.style.color = "green";
-                    }
-                } else {
-                    resultDiv.textContent = `❌ Error: ${data.detail}`;
-                    resultDiv.style.color = "red";
-                }
-            } catch (err) {
-                resultDiv.textContent = "❌ Network Error";
-            }
-        });
-
-        // Real-Time Webcam Logic
-        const video = document.getElementById('webcam');
-        const overlay = document.getElementById('overlay');
-        const ctx = overlay.getContext('2d');
-        const startBtn = document.getElementById('startCamBtn');
-        const stopBtn = document.getElementById('stopCamBtn');
-        const camResult = document.getElementById('camResult');
-        
-        let stream = null;
-        let intervalId = null;
-        let isProcessing = false;
-
-        startBtn.addEventListener('click', async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                startBtn.style.display = 'none';
-                stopBtn.style.display = 'inline-block';
-                
-                // Start processing loop
-                intervalId = setInterval(processFrame, 500); // Check every 500ms
-            } catch (err) {
-                console.error("Error accessing webcam:", err);
-                alert("Could not access webcam. Please allow permissions.");
-            }
-        });
-
-        stopBtn.addEventListener('click', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-            }
-            if (intervalId) clearInterval(intervalId);
+            const overlay = document.getElementById('overlay');
+            const ctx = overlay.getContext('2d');
             ctx.clearRect(0, 0, overlay.width, overlay.height);
-            startBtn.style.display = 'inline-block';
-            stopBtn.style.display = 'none';
-            camResult.textContent = "";
-        });
 
-        async function processFrame() {
-            if (isProcessing) return; // Skip if previous request is still running
-            isProcessing = true;
+            document.getElementById('camPlaceholder').classList.remove('hidden');
+            document.getElementById('startCamBtn').classList.remove('hidden');
+            document.getElementById('stopCamBtn').classList.add('hidden');
+            document.getElementById('liveIndicator').className = 'inline-block w-2.5 h-2.5 rounded-full bg-red-500';
+            document.getElementById('fpsBadge').textContent = 'Idle';
+        }
+
+        function toggleMirror() {
+            isMirror = !isMirror;
+            const video = document.getElementById('webcam');
+            video.style.transform = isMirror ? 'scaleX(-1)' : 'none';
+        }
+
+        function updateThreshold(val) {
+            matchThreshold = parseFloat(val);
+            document.getElementById('thresholdVal').textContent = matchThreshold.toFixed(2);
+        }
+
+        async function processWebcamFrame() {
+            if (isProcessingFrame) return;
+            const video = document.getElementById('webcam');
+            if (!video || video.readyState < 2) return;
+
+            isProcessingFrame = true;
+            const startT = performance.now();
 
             try {
-                // Capture frame
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                
-                // Convert to blob
-                canvas.toBlob(async (blob) => {
-                    if (!blob) { isProcessing = false; return; }
+                // Draw current frame to hidden offscreen canvas
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = video.videoWidth;
+                offCanvas.height = video.videoHeight;
+                const offCtx = offCanvas.getContext('2d');
+                offCtx.drawImage(video, 0, 0);
+
+                offCanvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        isProcessingFrame = false;
+                        return;
+                    }
 
                     const formData = new FormData();
                     formData.append('file', blob, 'frame.jpg');
 
                     try {
-                        const response = await authenticatedFetch('/recognize', { method: 'POST', body: formData });
-                        const data = await response.json();
+                        const res = await authFetch(`/recognize?threshold=${matchThreshold}`, {
+                            method: 'POST',
+                            body: formData
+                        });
 
-                        // Clear previous drawings
-                        ctx.clearRect(0, 0, overlay.width, overlay.height);
+                        const data = await res.json();
+                        const overlay = document.getElementById('overlay');
+                        const ctx = overlay.getContext('2d');
 
-                        // Ensure overlay matches video size
                         if (overlay.width !== video.videoWidth || overlay.height !== video.videoHeight) {
                             overlay.width = video.videoWidth;
                             overlay.height = video.videoHeight;
                         }
 
-                        if (response.ok) {
-                            if (data.box) {
-                                const [x1, y1, x2, y2] = data.box;
-                                const score = (data.score * 100).toFixed(1);
-                                const name = data.match;
-                                const color = name === "Unknown" ? "red" : "#00ff00";
+                        ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-                                // Draw Box
-                                ctx.strokeStyle = color;
-                                ctx.lineWidth = 3;
-                                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                        if (res.ok && data.box) {
+                            const [x1, y1, x2, y2] = data.box;
+                            const isMatched = data.match && data.match !== "Unknown";
+                            const color = isMatched ? '#10b981' : '#f59e0b';
+                            const scorePct = (data.score * 100).toFixed(1);
+                            const detPct = (data.det_conf * 100).toFixed(0);
 
-                                // Draw Label
-                                ctx.fillStyle = color;
-                                ctx.font = "bold 18px Arial";
-                                ctx.fillText(`${name} (${score}%)`, x1, y1 - 10);
-                                
-                                camResult.textContent = `Detected: ${name}`;
-                                camResult.style.color = name === "Unknown" ? "orange" : "green";
-                            } else {
-                                camResult.textContent = "No face detected";
-                                camResult.style.color = "gray";
-                            }
+                            // Draw rounded bounding box
+                            ctx.strokeStyle = color;
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+                            // Label banner
+                            const label = isMatched ? `${data.match} (${scorePct}%)` : `Unknown Face (${scorePct}%)`;
+                            ctx.font = 'bold 15px sans-serif';
+                            const textWidth = ctx.measureText(label).width;
+
+                            ctx.fillStyle = color;
+                            ctx.fillRect(x1, Math.max(0, y1 - 25), textWidth + 12, 22);
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillText(label, x1 + 6, Math.max(16, y1 - 8));
+
+                            // Add to activity feed (throttle)
+                            addActivityItem(data.match, scorePct, detPct, isMatched);
                         }
-                    } catch (err) {
-                        console.error("Recognition error:", err);
+
+                        const elapsed = Math.round(performance.now() - startT);
+                        document.getElementById('fpsBadge').textContent = `${elapsed}ms / inference`;
+                    } catch (e) {
+                        console.error("Frame recognition error:", e);
                     } finally {
-                        isProcessing = false;
+                        isProcessingFrame = false;
                     }
-                }, 'image/jpeg');
+                }, 'image/jpeg', 0.85);
+
             } catch (err) {
-                isProcessing = false;
+                isProcessingFrame = false;
             }
+        }
+
+        let lastLoggedPerson = null;
+        let lastLoggedTime = 0;
+
+        function addActivityItem(name, score, det, isMatch) {
+            const now = Date.now();
+            if (lastLoggedPerson === name && now - lastLoggedTime < 2500) return;
+            lastLoggedPerson = name;
+            lastLoggedTime = now;
+
+            const log = document.getElementById('activityLog');
+            if (log.children.length === 1 && log.children[0].innerText.includes('No detections')) {
+                log.innerHTML = '';
+            }
+
+            const timeStr = new Date().toLocaleTimeString();
+            const item = document.createElement('div');
+            item.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/80 flex items-center justify-between text-xs animate-fadeIn';
+            
+            const badgeColor = isMatch ? 'text-emerald-400 bg-emerald-950/60 border-emerald-800' : 'text-amber-400 bg-amber-950/60 border-amber-800';
+            item.innerHTML = `
+                <div>
+                    <div class="font-semibold text-slate-200">${isMatch ? name : 'Unknown Person'}</div>
+                    <div class="text-[10px] text-slate-500">${timeStr} • YOLO ${det}%</div>
+                </div>
+                <div class="px-2 py-0.5 rounded border text-[11px] font-mono font-bold ${badgeColor}">
+                    ${score}%
+                </div>
+            `;
+
+            log.prepend(item);
+            if (log.children.length > 25) log.removeChild(log.lastChild);
+        }
+
+        function clearEventLogs() {
+            document.getElementById('activityLog').innerHTML = `
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500">
+                    Activity cleared.
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // TAB 2: IMAGE FACE SCANNER
+        // ==========================================
+        async function handleScanFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById('scanPreviewImg');
+            preview.src = URL.createObjectURL(file);
+
+            document.getElementById('scanResultArea').classList.remove('hidden');
+            document.getElementById('scanMatchName').textContent = 'Analyzing...';
+            document.getElementById('scanScoreBar').style.width = '0%';
+            document.getElementById('scanScorePercent').textContent = '...';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await authFetch('/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    const scorePct = (data.score * 100).toFixed(1);
+                    const detPct = (data.det_conf * 100).toFixed(1);
+                    const matchName = data.match || 'Unknown';
+                    const isMatch = matchName !== 'Unknown';
+
+                    document.getElementById('scanMatchName').textContent = matchName;
+                    document.getElementById('scanMatchName').className = `text-2xl font-bold mt-1 ${isMatch ? 'text-emerald-400' : 'text-amber-400'}`;
+
+                    document.getElementById('scanScorePercent').textContent = `${scorePct}%`;
+                    document.getElementById('scanScoreBar').style.width = `${Math.min(100, scorePct)}%`;
+                    document.getElementById('scanScoreBar').className = `h-2.5 rounded-full transition-all duration-500 ${isMatch ? 'bg-emerald-500' : 'bg-amber-500'}`;
+
+                    document.getElementById('scanDetConf').textContent = `${detPct}%`;
+                    document.getElementById('scanDetBar').style.width = `${Math.min(100, detPct)}%`;
+
+                    document.getElementById('scanMessageNotice').textContent = data.message || 'Analyzed successfully.';
+                    showToast(`Scanned face: ${matchName}`, isMatch ? 'success' : 'info');
+                } else {
+                    document.getElementById('scanMatchName').textContent = 'Detection Failed';
+                    document.getElementById('scanMatchName').className = 'text-2xl font-bold mt-1 text-rose-400';
+                    document.getElementById('scanMessageNotice').textContent = data.detail || 'Could not detect face.';
+                    showToast(data.detail || 'Failed to detect face', 'error');
+                }
+            } catch (err) {
+                showToast(`Scan request failed: ${err.message}`, 'error');
+            }
+        }
+
+        // ==========================================
+        // TAB 3: ENROLL NEW IDENTITY
+        // ==========================================
+        function setEnrollMode(mode) {
+            enrollMode = mode;
+            if (mode === 'webcam') {
+                document.getElementById('enrollModeWebcamBtn').className = 'py-2.5 px-4 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-200 text-xs font-semibold flex items-center justify-center space-x-2 transition';
+                document.getElementById('enrollModeUploadBtn').className = 'py-2.5 px-4 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-xs font-semibold flex items-center justify-center space-x-2 transition';
+                document.getElementById('enrollWebcamBox').classList.remove('hidden');
+                document.getElementById('enrollUploadBox').classList.add('hidden');
+            } else {
+                document.getElementById('enrollModeUploadBtn').className = 'py-2.5 px-4 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-200 text-xs font-semibold flex items-center justify-center space-x-2 transition';
+                document.getElementById('enrollModeWebcamBtn').className = 'py-2.5 px-4 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-xs font-semibold flex items-center justify-center space-x-2 transition';
+                document.getElementById('enrollUploadBox').classList.remove('hidden');
+                document.getElementById('enrollWebcamBox').classList.add('hidden');
+                if (enrollCamStream) stopEnrollCam();
+            }
+        }
+
+        async function startEnrollCam() {
+            try {
+                enrollCamStream = await navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400 } });
+                const video = document.getElementById('enrollVideo');
+                video.srcObject = enrollCamStream;
+                video.classList.remove('hidden');
+                document.getElementById('enrollSnapshotPreview').classList.add('hidden');
+                
+                document.getElementById('startEnrollCamBtn').classList.add('hidden');
+                document.getElementById('snapEnrollCamBtn').classList.remove('hidden');
+                document.getElementById('retakeEnrollCamBtn').classList.add('hidden');
+            } catch (e) {
+                showToast(`Cannot access webcam: ${e.message}`, 'error');
+            }
+        }
+
+        function stopEnrollCam() {
+            if (enrollCamStream) {
+                enrollCamStream.getTracks().forEach(t => t.stop());
+                enrollCamStream = null;
+            }
+        }
+
+        function snapEnrollPhoto() {
+            const video = document.getElementById('enrollVideo');
+            const canvas = document.getElementById('enrollCanvas');
+            const preview = document.getElementById('enrollSnapshotPreview');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            canvas.toBlob((blob) => {
+                enrollCapturedBlob = blob;
+                preview.src = URL.createObjectURL(blob);
+                preview.classList.remove('hidden');
+                video.classList.add('hidden');
+
+                document.getElementById('snapEnrollCamBtn').classList.add('hidden');
+                document.getElementById('retakeEnrollCamBtn').classList.remove('hidden');
+            }, 'image/jpeg', 0.95);
+        }
+
+        function retakeEnrollPhoto() {
+            enrollCapturedBlob = null;
+            document.getElementById('enrollSnapshotPreview').classList.add('hidden');
+            document.getElementById('enrollVideo').classList.remove('hidden');
+            document.getElementById('snapEnrollCamBtn').classList.remove('hidden');
+            document.getElementById('retakeEnrollCamBtn').classList.add('hidden');
+        }
+
+        function handleEnrollFile(e) {
+            enrollSelectedFile = e.target.files[0];
+            if (enrollSelectedFile) {
+                document.getElementById('enrollFileName').textContent = `Selected: ${enrollSelectedFile.name}`;
+            }
+        }
+
+        async function handleEnrollSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('enrollNameInput').value.trim();
+            if (!name) {
+                showToast('Please enter a name for enrollment', 'warning');
+                return;
+            }
+
+            let fileToSend = null;
+            if (enrollMode === 'webcam') {
+                if (!enrollCapturedBlob) {
+                    showToast('Please take a photo first', 'warning');
+                    return;
+                }
+                fileToSend = enrollCapturedBlob;
+            } else {
+                if (!enrollSelectedFile) {
+                    showToast('Please select an image file to upload', 'warning');
+                    return;
+                }
+                fileToSend = enrollSelectedFile;
+            }
+
+            const btn = document.getElementById('enrollSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Enrolling face...`;
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('file', fileToSend, 'enrollment.jpg');
+
+            try {
+                const res = await authFetch('/enroll', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(`✔ ${data.message}`, 'success');
+                    document.getElementById('enrollNameInput').value = '';
+                    enrollCapturedBlob = null;
+                    enrollSelectedFile = null;
+                    document.getElementById('enrollFileName').textContent = 'Choose image file with a clear face';
+                    if (enrollMode === 'webcam') retakeEnrollPhoto();
+                    fetchSystemStatus();
+                } else {
+                    showToast(`❌ ${data.detail || 'Enrollment failed'}`, 'error');
+                }
+            } catch (err) {
+                showToast(`Network error: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    <span>Enroll Identity</span>
+                `;
+            }
+        }
+
+        // ==========================================
+        // TAB 4: DATABASE MANAGER
+        // ==========================================
+        async function loadUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            try {
+                const res = await authFetch('/users');
+                if (res.ok) {
+                    allUsersCache = await res.json();
+                    renderUsersTable(allUsersCache);
+                    document.getElementById('enrolledCountText').textContent = `${allUsersCache.length} Enrolled`;
+                } else if (res.status === 401) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-amber-400">
+                                ⚠️ Authentication required. Please set your API Key above.
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-rose-400">
+                                Failed to load enrolled identities (HTTP ${res.status}).
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (err) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-rose-400">
+                            Network error loading database.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-slate-500">
+                            No enrolled persons in the database. Use the "Enroll" tab to add faces.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-slate-900/60 transition group">
+                    <td class="py-3 px-4 font-mono text-slate-400 text-xs">#${u.id}</td>
+                    <td class="py-3 px-4">
+                        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white font-bold flex items-center justify-center text-xs shadow">
+                            ${u.name.charAt(0).toUpperCase()}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 font-medium text-slate-100">${escapeHtml(u.name)}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteUser(${u.id}, '${escapeHtml(u.name)}')" class="px-2.5 py-1 text-xs rounded bg-rose-950/40 hover:bg-rose-900/80 text-rose-300 border border-rose-800/40 transition">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers(query) {
+            query = query.toLowerCase();
+            const filtered = allUsersCache.filter(u => u.name.toLowerCase().includes(query) || u.id.toString().includes(query));
+            renderUsersTable(filtered);
+        }
+
+        async function deleteUser(id, name) {
+            if (!confirm(`Are you sure you want to remove '${name}' from the recognition database?`)) return;
+
+            try {
+                const res = await authFetch(`/users/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, 'success');
+                    loadUsersTable();
+                    fetchSystemStatus();
+                } else {
+                    showToast(data.detail || 'Delete failed', 'error');
+                }
+            } catch (err) {
+                showToast(`Error deleting user: ${err.message}`, 'error');
+            }
+        }
+
+        // ==========================================
+        // TOAST NOTIFICATIONS
+        // ==========================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-slate-900 border-slate-700 text-slate-200';
+            let icon = 'ℹ';
+            if (type === 'success') {
+                bg = 'bg-emerald-950/90 border-emerald-800 text-emerald-200';
+                icon = '✔';
+            } else if (type === 'error') {
+                bg = 'bg-rose-950/90 border-rose-800 text-rose-200';
+                icon = '❌';
+            } else if (type === 'warning') {
+                bg = 'bg-amber-950/90 border-amber-800 text-amber-200';
+                icon = '⚠️';
+            }
+
+            toast.className = `p-3 rounded-xl border shadow-xl flex items-center space-x-2.5 text-xs max-w-sm pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 ${bg}`;
+            toast.innerHTML = `<span class="font-bold">${icon}</span><span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
 </body>
