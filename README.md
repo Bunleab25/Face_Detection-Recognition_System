@@ -54,17 +54,32 @@ High-confidence verification on portrait representations (**99.8% Cosine Similar
 
 ---
 
-## 3. Hardware Performance Profile
+## 3. Empirical Hardware Benchmarks
 
-Evaluated on **Ubuntu 24.04 LTS** with **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0, 4GB VRAM):
+Automated benchmarks evaluated on **Ubuntu 24.04 LTS** (Kernel 7.0) powered by an **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0, 4GB VRAM) and an **Intel Core i5-12450H CPU**:
 
-| Pipeline Stage | Device | Input Tensor | Latency |
-| :--- | :---: | :---: | :---: |
-| **YOLO Face Detection** | CUDA | $640 \times 480$ frame | **~14 ms** |
-| **Alignment & Crop** | CPU | $112 \times 112 \times 3$ | **~3 ms** |
-| **ArcFace 512-D Embedding** | CUDA | $1 \times 3 \times 112 \times 112$ | **~9 ms** |
-| **Cosine Matrix Search** | CPU / NumPy | $N = 1,000$ enrolled identities | **< 1 ms** |
-| **End-to-End Stream Loop** | Hybrid | Frame capture to JSON response | **~65 - 70 ms (~15 FPS)** |
+### Model Latency & Throughput (FP32)
+
+| Stage / Model | Architecture | Compute Device | Mean Latency | Throughput | Peak VRAM | Speedup |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **YOLO Face Detector** | YOLOv11 Face (5.19 MB) | **CUDA (RTX 3050)** | **7.47 ms** | **133.8 FPS** | 65.9 MB | **6.2x** |
+| | | CPU (i5-12450H) | 46.37 ms | 21.6 FPS | N/A | 1.0x (ref) |
+| **ArcFace Feature Extractor** | ResNet-50 (27.4M params) | **CUDA (RTX 3050)** | **5.53 ms** | **180.9 FPS** | 156.4 MB | **6.2x** |
+| | | CPU (i5-12450H) | 34.45 ms | 29.0 FPS | N/A | 1.0x (ref) |
+| **End-to-End Pipeline** | 1080p Ingest → Detect → 512-D Embed → 500-Profile Match | **CUDA (Hybrid)** | **19.85 ms** | **50.4 FPS** | 222.3 MB | **3.0x** |
+| | | CPU (Fallback) | 59.74 ms | 16.7 FPS | N/A | 1.0x (ref) |
+
+### Vector Cosine Matching Scaling
+Cosine distance calculation across 512-dimensional hyperspherical embeddings:
+- **100 Identities**: `5.60 µs` (~178,000 queries/sec)
+- **1,000 Identities**: `2.06 ms` (~485 queries/sec)
+- **10,000 Identities**: `5.07 ms` (~197 queries/sec)
+
+> Detailed logs and metrics are exported to [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) and [`benchmark_results.json`](benchmark_results.json).
+> Reproduce benchmarks anytime via:
+> ```bash
+> python scripts/benchmark.py --iterations 50
+> ```
 
 ---
 

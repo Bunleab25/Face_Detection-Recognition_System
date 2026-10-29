@@ -1,0 +1,108 @@
+{
+  "timestamp": "2026-10-29T15:00:01Z",
+  "hardware": {
+    "os": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "cuda_version": "13.0",
+    "pytorch_version": "2.13.0+cu130"
+  },
+  "yolo": {
+    "weights_mb": 5.19,
+    "gpu": {
+      "device": "cuda",
+      "input_resolution": "640x640",
+      "iterations": 30,
+      "mean_latency_ms": 7.47,
+      "median_latency_ms": 7.04,
+      "p95_latency_ms": 9.3,
+      "min_latency_ms": 6.82,
+      "max_latency_ms": 10.41,
+      "throughput_fps": 133.8,
+      "peak_vram_mb": 65.9
+    },
+    "cpu": {
+      "device": "cpu",
+      "input_resolution": "640x640",
+      "iterations": 15,
+      "mean_latency_ms": 46.37,
+      "median_latency_ms": 44.32,
+      "p95_latency_ms": 55.07,
+      "min_latency_ms": 41.22,
+      "max_latency_ms": 59.83,
+      "throughput_fps": 21.6,
+      "peak_vram_mb": 0.0
+    },
+    "speedup": 6.21
+  },
+  "arcface": {
+    "backbone": "resnet50",
+    "weights_mb": 209.65,
+    "parameters": 27430976,
+    "gpu": {
+      "device": "cuda",
+      "input_resolution": "112x112",
+      "embedding_dim": 512,
+      "parameters": 27430976,
+      "iterations": 30,
+      "mean_latency_ms": 5.53,
+      "median_latency_ms": 5.45,
+      "p95_latency_ms": 6.02,
+      "min_latency_ms": 5.16,
+      "max_latency_ms": 6.64,
+      "throughput_fps": 180.9,
+      "peak_vram_mb": 156.4
+    },
+    "cpu": {
+      "device": "cpu",
+      "input_resolution": "112x112",
+      "embedding_dim": 512,
+      "parameters": 27430976,
+      "iterations": 15,
+      "mean_latency_ms": 34.45,
+      "median_latency_ms": 33.08,
+      "p95_latency_ms": 50.32,
+      "min_latency_ms": 21.88,
+      "max_latency_ms": 63.24,
+      "throughput_fps": 29.0,
+      "peak_vram_mb": 0.0
+    },
+    "speedup": 6.23
+  },
+  "cosine_search": {
+    "100_identities": {
+      "scale": 100,
+      "mean_latency_us": 5.6,
+      "qps": 178420
+    },
+    "1000_identities": {
+      "scale": 1000,
+      "mean_latency_us": 2060.24,
+      "qps": 485
+    },
+    "10000_identities": {
+      "scale": 10000,
+      "mean_latency_us": 5068.08,
+      "qps": 197
+    }
+  },
+  "end_to_end_pipeline": {
+    "gpu": {
+      "device": "cuda",
+      "input_frame": "1920x1080 (Full HD)",
+      "enrolled_db_size": 500,
+      "mean_latency_ms": 19.85,
+      "p95_latency_ms": 23.6,
+      "pipeline_fps": 50.4
+    },
+    "cpu": {
+      "device": "cpu",
+      "input_frame": "1920x1080 (Full HD)",
+      "enrolled_db_size": 500,
+      "mean_latency_ms": 59.74,
+      "p95_latency_ms": 64.09,
+      "pipeline_fps": 16.7
+    },
+    "speedup": 3.01
+  }
+}
