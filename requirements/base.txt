@@ -1,0 +1,6 @@
+# Core Vision & Inference Dependencies
+ultralytics==8.3.246
+opencv-python==4.12.0.88
+torchvision
+tqdm
+numpy

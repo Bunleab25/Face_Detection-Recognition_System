@@ -80,8 +80,10 @@ source .venv/bin/activate  # Linux/Mac
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt
-pip install -r requirements-gpu.txt  # if you have CUDA
-pip install -r requirements_fastapi.txt  # for web app
+# For specialized setups:
+# pip install -r requirements/gpu.txt      # CUDA acceleration
+# pip install -r requirements/cpu.txt      # CPU-only PyTorch
+# pip install -r requirements/fastapi.txt  # Web dashboard
 ```
 
 ## Code Style

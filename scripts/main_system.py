@@ -2,23 +2,34 @@
 Real-Time Face Recognition System
 Loads the face database and recognizes people in real-time via webcam
 
-Usage: python main_system.py --database face_database.npy
+Usage: python scripts/main_system.py --database face_database.npy
 """
 
 import cv2
 import torch
 import numpy as np
 import os
+import sys
 import time
+from pathlib import Path
 from typing import cast
+
+# Add repository root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from ultralytics import YOLO  # type: ignore
 from torchvision import transforms
-from scripts.model import FaceRecognitionModel
+
+try:
+    from scripts.model import FaceRecognitionModel
+except ImportError:
+    from model import FaceRecognitionModel
 
 # --- CONFIGURATION ---
 DB_FILE = "face_database.npy"
-MODEL_PATH = "runs/arcface_train/arcface_resnet50_epoch_100.pth"
+MODEL_PATH = "models/arcface.pth" if os.path.exists("models/arcface.pth") else "runs/arcface_train/arcface_resnet50_epoch_100.pth"
 THRESHOLD = 0.5  # Adjust this: 0.4 (loose) to 0.7 (strict)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -41,7 +52,8 @@ def main(db_file=DB_FILE, threshold=THRESHOLD, camera_id=0, model_path=MODEL_PAT
 
     # 2. Load Models
     print("Loading detection model...")
-    detector = YOLO("models/yolo11n.pt")
+    yolo_model = "models/yolo_face.pt" if os.path.exists("models/yolo_face.pt") else "models/yolo11n.pt"
+    detector = YOLO(yolo_model)
     
     print("Loading recognition model...")
     # Load checkpoint first to get num_classes

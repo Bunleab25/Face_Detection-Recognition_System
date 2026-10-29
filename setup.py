@@ -49,14 +49,16 @@ def install_requirements(use_gpu=True):
     """Install required packages"""
     print_header("Installing Requirements")
     
-    requirements_files = ["requirements.txt"]
-    
     if use_gpu:
-        requirements_files.append("requirements-gpu.txt")
+        requirements_files = [os.path.join("requirements", "gpu.txt"), os.path.join("requirements", "fastapi.txt")]
         print("Installing with GPU support...")
     else:
-        requirements_files.append("requirements-cpu.txt")
+        requirements_files = [os.path.join("requirements", "cpu.txt"), os.path.join("requirements", "fastapi.txt")]
         print("Installing with CPU support...")
+    
+    # Fallback to root requirements.txt if directory files aren't found
+    if not any(os.path.exists(rf) for rf in requirements_files):
+        requirements_files = ["requirements.txt"]
     
     for req_file in requirements_files:
         if os.path.exists(req_file):

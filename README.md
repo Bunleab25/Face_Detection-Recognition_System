@@ -93,7 +93,7 @@ start.bat
 
 #### Manual Run
 ```bash
-pip install -r requirements.txt -r requirements_fastapi.txt
+pip install -r requirements.txt
 cp .env.example .env
 python run.py
 ```

@@ -3,16 +3,20 @@
 ```text
 .
 ├── app/                 FastAPI application, model service, and web assets
+├── assets/              Empirical screenshots, UI telemetry, and research diagrams
 ├── docs/                Setup, usage, architecture, and training guides
 ├── models/              YOLO and ArcFace model weights (Git LFS)
+├── requirements/        Modular dependency files (base, cpu, gpu, fastapi)
 ├── scripts/             Detection, recognition, training, and evaluation tools
-├── web_app/             Alternate web-app launcher
+├── tests/               Unit and integration test suites
 ├── CONTRIBUTING.md      Contribution guidelines
 ├── LICENSE              MIT license
-├── README.md            Project overview and getting started
-├── main_system.py       Standalone recognition entry point
-├── requirements*.txt    Dependency lists for supported configurations
-└── setup.py             Interactive environment setup helper
+├── README.md            Project overview and academic documentation
+├── requirements.txt     Root dependency manifest
+├── run.py               Cross-platform service bootstrap
+├── setup.py             Interactive environment setup helper
+├── start.bat            Windows one-click launcher
+└── start.sh             Linux / Ubuntu launcher
 ```
 
 Datasets, generated training runs, local databases, and environment files belong
