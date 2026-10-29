@@ -17,6 +17,10 @@
 </head>
 <body>
     <h1>Face Recognition System</h1>
+    <p>
+        <label for="apiKey">API Key:</label><br>
+        <input type="password" id="apiKey" autocomplete="off" required>
+    </p>
     
     <div class="container">
         <!-- Enrollment Section -->
@@ -89,6 +93,12 @@
     </div>
 
     <script>
+        function authenticatedFetch(url, options) {
+            const headers = new Headers(options.headers || {});
+            headers.set('X-API-Key', document.getElementById('apiKey').value);
+            return fetch(url, { ...options, headers });
+        }
+
         // --- Enrollment Webcam Logic ---
         let enrollStream = null;
         let enrollBlob = null;
@@ -190,7 +200,7 @@
             formData.append('file', fileToSend, 'enrollment.jpg');
 
             try {
-                const response = await fetch('/enroll', { method: 'POST', body: formData });
+                const response = await authenticatedFetch('/enroll', { method: 'POST', body: formData });
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -230,7 +240,7 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch('/recognize', { method: 'POST', body: formData });
+                const response = await authenticatedFetch('/recognize', { method: 'POST', body: formData });
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -311,7 +321,7 @@
                     formData.append('file', blob, 'frame.jpg');
 
                     try {
-                        const response = await fetch('/recognize', { method: 'POST', body: formData });
+                        const response = await authenticatedFetch('/recognize', { method: 'POST', body: formData });
                         const data = await response.json();
 
                         // Clear previous drawings

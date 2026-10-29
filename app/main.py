@@ -7,6 +7,7 @@ from typing import List
 
 from app.database import get_db, init_db, User
 from app.face_service import FaceService
+from app.security import require_api_key
 
 app = FastAPI(title="Face Recognition System")
 
@@ -24,7 +25,7 @@ init_db()
 # Uses env vars: YOLO_MODEL_PATH / ARCFACE_CKPT_PATH (see app/config.py)
 face_service = FaceService()
 
-@app.post("/enroll")
+@app.post("/enroll", dependencies=[Depends(require_api_key)])
 async def enroll_user(
     name: str = Form(...),
     file: UploadFile = File(...),
@@ -46,7 +47,7 @@ async def enroll_user(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/recognize")
+@app.post("/recognize", dependencies=[Depends(require_api_key)])
 async def recognize_user(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
@@ -93,4 +94,4 @@ async def recognize_user(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -79,14 +79,20 @@ Use `--device 0` to select the first CUDA GPU when CUDA is installed. Prediction
 
 ### Start the web application
 
-Copy the example configuration and install the web dependencies:
+Set an API key in the same terminal before starting the server. Generate a
+random key and export it on Linux/macOS:
 
 ```bash
-cp .env.example .env
+export FACE_API_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
 python -m pip install -r requirements_fastapi.txt
 ```
 
-On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
+On Windows PowerShell:
+
+```powershell
+$env:FACE_API_KEY = python -c "import secrets; print(secrets.token_hex(32))"
+python -m pip install -r requirements_fastapi.txt
+```
 
 Run the server from the repository root:
 
@@ -99,10 +105,17 @@ Open <http://127.0.0.1:8000>. The API currently provides:
 - `POST /enroll` — enroll a person using a `name` form field and an image `file`
 - `POST /recognize` — find the closest enrolled identity for an image `file`
 
+Enter the generated API key in the page's **API Key** field before using either
+endpoint. Requests are rejected if `FACE_API_KEY` is not configured. The key is
+kept only in the page until it is reloaded. Both direct-run entry points bind to
+`127.0.0.1`; if you intentionally expose the app through a reverse proxy, use
+HTTPS and keep the API key private.
+
 Example enrollment request:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/enroll \
+  -H "X-API-Key: $FACE_API_KEY" \
   -F "name=Example Person" \
   -F "file=@path/to/image.jpg"
 ```

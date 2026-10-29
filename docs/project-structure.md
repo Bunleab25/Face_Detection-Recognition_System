@@ -7,7 +7,6 @@
 ├── models/              YOLO and ArcFace model weights (Git LFS)
 ├── scripts/             Detection, recognition, training, and evaluation tools
 ├── web_app/             Alternate web-app launcher
-├── .env.example         Safe template for local model configuration
 ├── CONTRIBUTING.md      Contribution guidelines
 ├── LICENSE              MIT license
 ├── README.md            Project overview and getting started
