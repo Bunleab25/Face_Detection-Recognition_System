@@ -1,285 +1,145 @@
-# Face Detection & Recognition System: A Deep Metric Learning Framework
+# Face Detection & Recognition System
+### A Deep Metric Learning Framework via YOLO and ArcFace
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.13%20(CUDA%2013)-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
-[![YOLO](https://img.shields.io/badge/YOLO-Ultralytics-00FFFF?style=for-the-badge&logo=yolo&logoColor=black)](https://ultralytics.com)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Modern%20Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![CUDA](https://img.shields.io/badge/NVIDIA%20CUDA-Hardware%20Accelerated-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://developer.nvidia.com/cuda-zone)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-
-An open-source computer vision research and engineering framework for real-time unconstrained face detection and identity recognition. The system couples single-stage bounding box localization (**YOLO**) with deep metric representation learning on unit hyperspheres (**ArcFace** on a ResNet-50 backbone), exposed via a high-performance **FastAPI** service and a modern real-time telemetry dashboard.
+This repository implements a real-time, hardware-accelerated face detection and identity recognition framework. The system integrates single-stage bounding box localization via **YOLO** with deep metric learning representations via **Additive Angular Margin Loss (ArcFace)** on a ResNet-50 backbone, backed by a FastAPI service and an asynchronous real-time telemetry dashboard.
 
 ---
 
-## 📌 Abstract & Overview
+## 1. Theoretical Background & Methodology
 
-Open-set facial recognition under unconstrained conditions requires joint optimization of two distinct computer vision tasks:
-1. **Robust face localization** invariant to scale, orientation, occlusion, and lighting variation.
-2. **Discriminative feature representation** that maximizes inter-class geodesic divergence while minimizing intra-class variance in a compact embedding space.
+Open-set face identification requires mapping facial images to a compact latent representation where intra-class variance is minimized and inter-class divergence is maximized.
 
-This framework implements a two-stage hybrid architecture:
-- **Detection Stage**: YOLO-based face detector localized to high-recall facial bounding boxes with sub-millisecond tensor extraction.
-- **Metric Embedding Stage**: ResNet-50 backbone trained with **Additive Angular Margin Loss (ArcFace)**, projecting canonical $112 \times 112$ facial crops onto a 512-dimensional hyperspherical manifold $\mathcal{S}^{511} \subset \mathbb{R}^{512}$.
-- **Identity Matching**: Geodesic angle evaluation via cosine similarity:
-  $$\mathcal{S}(\hat{\mathbf{z}}_1, \hat{\mathbf{z}}_2) = \hat{\mathbf{z}}_1^\top \hat{\mathbf{z}}_2 = \cos(\theta_{12})$$
-- **Monitoring & Telemetry**: An interactive dark-mode dashboard providing live video streaming, dynamic thresholding, identity enrollment, and persistent SQLite profile management.
+### Additive Angular Margin Loss (ArcFace)
 
----
-
-## 🔬 Empirical Results & Real-Time Monitoring
-
-### Figure 1: Real-Time Stream Monitoring & Detection Activity Telemetry
-Continuous inference loop running at sub-70ms latency on an **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0). The side-drawer logs real-time detection events with timestamped telemetry, bounding box coordinates, YOLO detection confidence, and ArcFace cosine similarity scores.
-
-![Figure 1: Real-Time Monitoring Dashboard](assets/screenshots/fig1_realtime_monitoring_dashboard.png)
-
----
-
-### Figure 2: High-Confidence Identity Verification
-Empirical evaluation on high-resolution portrait imagery demonstrating near-perfect discriminative capability (**99.8% Cosine Similarity**, **89.6% YOLO Detection Confidence**).
-
-![Figure 2: High-Confidence Recognition Showcase](assets/screenshots/fig4_high_confidence_verification.png)
-
----
-
-### Figure 3: Unconstrained Environmental Face Inspection
-Robust identification under complex indoor environmental illumination, background clutter, and natural head poses (**97.5% Cosine Similarity**, **83.7% YOLO Detection Confidence**).
-
-![Figure 3: Unconstrained Face Inspection](assets/screenshots/fig3_unconstrained_face_inspection.png)
-
----
-
-### Figure 4: Hyperspherical Embedding Enrollment Interface
-Interactive identity registration interface supporting both webcam capture and direct image file uploads. Extracted 512-dimensional normalized vectors are persistently indexed into SQLite.
-
-![Figure 4: Identity Enrollment Interface](assets/screenshots/fig2_identity_enrollment.png)
-
----
-
-## 📐 Mathematical Methodology
-
-### 1. Additive Angular Margin Loss (ArcFace)
-Traditional softmax loss optimizes separable features on Euclidean hyperplanes but fails to enforce sufficiently compact intra-class clusters on open-set verification tasks. ArcFace introduces an **additive angular margin penalty** $m$ directly on the geodesic angle $\theta$ on the unit hypersphere:
+Standard softmax cross-entropy separates feature vectors using linear hyperplanes but fails to enforce geodesic angular margins on open-set verification tasks. ArcFace (Deng et al., CVPR 2019) incorporates an additive angular margin penalty $m$ directly into the target logit angle on a normalized hypersphere:
 
 $$\mathcal{L}_{\text{ArcFace}} = -\frac{1}{N} \sum_{i=1}^{N} \log \frac{e^{s(\cos(\theta_{y_i} + m))}}{e^{s(\cos(\theta_{y_i} + m))} + \sum_{j \neq y_i} e^{s \cos \theta_j}}$$
 
-where:
-- $\theta_{y_i} = \arccos\left(\frac{\mathbf{W}_{y_i}^\top \mathbf{z}_i}{\|\mathbf{W}_{y_i}\| \|\mathbf{z}_i\|}\right)$ represents the angle between embedding $\mathbf{z}_i$ and class weight vector $\mathbf{W}_{y_i}$.
-- $s = 64.0$ is the hypersphere radius scale factor.
-- $m = 0.5$ is the additive angular margin penalty (in radians).
+- $s = 64.0$: Feature scale factor projecting embeddings onto hypersphere radius $s$.
+- $m = 0.5$: Additive angular margin penalty (radians), enforcing strict decision boundaries between adjacent identity clusters.
 
-```
-   Softmax Decision Boundary          ArcFace Angular Margin Boundary
-      Class 1        Class 2              Class 1      Margin (m)    Class 2
-         \              /                    \          |  m  |        /
-          \    Linear  /                      \         |     |       /
-           \  Boundary/                        \        |     |      /
-            \        /                          \       |     |     /
-             \      /                            \      |     |    /
-              \    /                              \     |     |   /
-               \  /                                \    |     |  /
-                \/                                  \---|-----|-/
-```
-
-### 2. Hyperspherical Normalization
-The latent embedding $\mathbf{z} \in \mathbb{R}^{512}$ produced by the ResNet-50 head is explicitly normalized via $L_2$-norm:
-
-$$\hat{\mathbf{z}} = \frac{\mathbf{z}}{\|\mathbf{z}\|_2} = \frac{\mathbf{z}}{\sqrt{\sum_{k=1}^{512} z_k^2}}, \quad \|\hat{\mathbf{z}}\|_2 = 1$$
-
-Ensuring all representations lie strictly on the unit hypersphere surface $\mathcal{S}^{511}$, making Euclidean distance monotonically related to cosine distance:
-
-$$\|\hat{\mathbf{z}}_1 - \hat{\mathbf{z}}_2\|_2^2 = 2 - 2 \cos(\theta_{12})$$
-
-### 3. Open-Set Decision Rule
-Given an enrolled gallery $\mathcal{G} = \{(\hat{\mathbf{z}}_k, y_k)\}_{k=1}^K$ and a query embedding $\hat{\mathbf{z}}_q$:
-
-$$\hat{y} = \begin{cases} 
-y_{k^*}, & \text{if } \mathcal{S}(\hat{\mathbf{z}}_q, \hat{\mathbf{z}}_{k^*}) \ge \tau \\
-\text{"Unknown"}, & \text{otherwise}
-\end{cases}$$
-
-where $k^* = \arg\max_{k} \left(\hat{\mathbf{z}}_q^\top \hat{\mathbf{z}}_k\right)$, and $\tau \in [0, 1]$ is the acceptance threshold (default $\tau = 0.50$).
+![ArcFace Decision Margin Comparison](assets/research/arcface_geometric_margin_comparison.png)
+*Figure 1: Comparison of decision margins across Softmax, SphereFace, CosFace, and ArcFace under binary classification (adapted from Deng et al., CVPR 2019).*
 
 ---
 
-## 🏗️ System Architecture & Dataflow
+### Pipeline Architecture
 
-```mermaid
-flowchart TD
-    subgraph Input["Sensor & Capture Layer"]
-        A["Input Stream (Webcam / Image)"]
-    end
+1. **Face Localization**: YOLO detects face regions and outputs bounding box coordinates $(x_1, y_1, x_2, y_2)$ and confidence scores.
+2. **Alignment & Preprocessing**: Facial crops are aligned and resized to $112 \times 112$ tensors, normalized to mean $[0.5, 0.5, 0.5]$ and std $[0.5, 0.5, 0.5]$.
+3. **Hyperspherical Embedding**: ResNet-50 extracts a 512-dimensional vector $\mathbf{z} \in \mathbb{R}^{512}$, normalized via $L_2$-norm:
+   $$\hat{\mathbf{z}} = \frac{\mathbf{z}}{\|\mathbf{z}\|_2}, \quad \|\hat{\mathbf{z}}\|_2 = 1$$
+4. **Metric Verification**: Identities are matched against enrolled vectors using cosine similarity:
+   $$\mathcal{S}(\hat{\mathbf{z}}_q, \hat{\mathbf{z}}_k) = \hat{\mathbf{z}}_q^\top \hat{\mathbf{z}}_k = \cos(\theta_{qk})$$
+   A candidate match is confirmed if $\mathcal{S} \ge \tau$ (default threshold $\tau = 0.50$).
 
-    subgraph Localization["Stage 1: Face Detection"]
-        B["YOLO Face Detector"]
-        C{"Face Detected?"}
-        D["Bounding Box Extraction (x1, y1, x2, y2)"]
-        E["Return Unknown / Pass-through"]
-    end
-
-    subgraph Preprocessing["Stage 2: Alignment & Normalization"]
-        F["Crop Face ROI"]
-        G["Resize to 112×112 Canonical Tensor"]
-        H["Normalize (Mean=[0.5,0.5,0.5], Std=[0.5,0.5,0.5])"]
-    end
-
-    subgraph Embedding["Stage 3: Deep Metric Extraction"]
-        I["ResNet-50 Deep Backbone"]
-        J["Linear Projection (512-dim)"]
-        K["L2 Hyperspherical Normalization (||z|| = 1)"]
-    end
-
-    subgraph Matching["Stage 4: Identification & Retrieval"]
-        L[("SQLite Gallery DB (face_recognition.db)")]
-        M["Cosine Similarity Matrix Search"]
-        N{"Score ≥ Threshold (τ=0.50)?"}
-        O["Identity Verified (e.g. Bunleab)"]
-        P["Identity Unknown"]
-    end
-
-    subgraph UI["Stage 5: Visualization & Telemetry"]
-        Q["Real-Time Dashboard (FastAPI & Tailwind)"]
-    end
-
-    A --> B
-    B --> C
-    C -- No --> E
-    C -- Yes --> D
-    D --> F
-    F --> G
-    G --> H
-    H --> I
-    I --> J
-    J --> K
-    K --> M
-    L -. Enrolled Embeddings .-> M
-    M --> N
-    N -- Yes --> O
-    N -- No --> P
-    O --> Q
-    P --> Q
-    E --> Q
-```
+![ArcFace Training & Inference Pipeline](assets/research/arcface_pipeline_framework.png)
+*Figure 2: ArcFace loss computation pipeline with normalized feature embeddings and class weight centers (adapted from Deng et al., CVPR 2019).*
 
 ---
 
-## ⚡ Hardware Benchmarks & Performance Metrics
+## 2. Empirical Verification & Telemetry
 
-Benchmarks measured on **Ubuntu 24.04 LTS** with **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0, Driver 580.178.04, 4GB VRAM) and **Intel Core i5/i7 equivalent**:
+### Real-Time Inference & Live Monitoring
+Sub-70ms inference loop running on an **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0). The dashboard streams real-time bounding box localization, ArcFace similarity scores, and timestamped detection telemetry.
 
-| Pipeline Stage | Processing Unit | Resolution / Dimension | Mean Latency | Throughput |
-| :--- | :---: | :---: | :---: | :---: |
-| **YOLO Face Detection** | CUDA (`cuda:0`) | $640 \times 480$ input | **14.2 ms** | ~70.4 FPS |
-| **Affine Alignment & Tensor Crop** | CPU / OpenCV | $112 \times 112 \times 3$ | **2.8 ms** | ~357 FPS |
-| **ArcFace Embedding Extraction** | CUDA (`cuda:0`) | $1 \times 3 \times 112 \times 112 \to \mathbb{R}^{512}$ | **8.6 ms** | ~116.2 FPS |
-| **Hyperspherical Cosine Search** | CPU / NumPy | $N=1,000$ enrolled identities | **0.4 ms** | >2000 QPS |
-| **End-to-End Inference Loop** | Hybrid CUDA/CPU | Frame to JSON API | **~65 - 70 ms** | **~15 FPS** |
+![Figure 3: Real-Time Stream Monitoring](assets/screenshots/fig1_realtime_monitoring_dashboard.png)
+*Figure 3: Live webcam stream, bounding box overlay, and detection activity telemetry.*
 
----
+### Identity Inspection & Verification
+High-confidence verification on portrait representations (**99.8% Cosine Similarity**, **89.6% YOLO Confidence**) and unconstrained indoor conditions.
 
-## 📂 Repository Organization
-
-```text
-├── app/
-│   ├── config.py             # Hardware auto-detection, .env management & settings
-│   ├── database.py           # SQLAlchemy SQLite schema (users & 512-D embeddings)
-│   ├── face_service.py       # Core inference pipeline (YOLO + ArcFace ResNet-50)
-│   ├── main.py               # FastAPI REST service & diagnostic endpoints
-│   ├── model.py              # PyTorch ArcFace architecture & margin loss layer
-│   ├── security.py           # Header-based API key authentication (X-API-Key)
-│   └── static/
-│       └── index.html        # Modern Tailwind glassmorphic dashboard & telemetry
-├── assets/
-│   └── screenshots/          # Empirical evaluation and monitoring figures
-├── docs/                     # Academic architecture guides & training references
-│   ├── arcface_architecture_reference.md
-│   ├── face_alignment_guide.md
-│   └── step3_4_training_inference.md
-├── models/                   # Git LFS checkpoints (arcface.pth, yolo_face.pt)
-├── scripts/                  # Standalone training, evaluation & registration scripts
-├── tests/                    # Automated unit and API test suite
-│   ├── test_api.py
-│   └── test_security.py
-├── run.py                    # Cross-platform entry point
-├── start.sh                  # Ubuntu / Linux one-click execution script
-├── start.bat                 # Windows launcher
-├── requirements.txt          # Python base dependencies
-├── requirements-gpu.txt      # CUDA PyTorch wheels
-└── README.md
-```
+![Figure 4: Face Recognition Inspection](assets/screenshots/fig4_high_confidence_verification.png)
+*Figure 4: Empirical identity matching with dual confidence indicators.*
 
 ---
 
-## 🚀 Quick Start Guide
+## 3. Hardware Performance Profile
+
+Evaluated on **Ubuntu 24.04 LTS** with **NVIDIA GeForce RTX 3050 Laptop GPU** (CUDA 13.0, 4GB VRAM):
+
+| Pipeline Stage | Device | Input Tensor | Latency |
+| :--- | :---: | :---: | :---: |
+| **YOLO Face Detection** | CUDA | $640 \times 480$ frame | **~14 ms** |
+| **Alignment & Crop** | CPU | $112 \times 112 \times 3$ | **~3 ms** |
+| **ArcFace 512-D Embedding** | CUDA | $1 \times 3 \times 112 \times 112$ | **~9 ms** |
+| **Cosine Matrix Search** | CPU / NumPy | $N = 1,000$ enrolled identities | **< 1 ms** |
+| **End-to-End Stream Loop** | Hybrid | Frame capture to JSON response | **~65 - 70 ms (~15 FPS)** |
+
+---
+
+## 4. Getting Started
 
 ### Prerequisites
-1. **Python 3.9+** (Python 3.11 recommended).
-2. **Git LFS** (required to download pre-trained model weights):
-   ```bash
-   git lfs install
-   git lfs pull
-   ```
-3. *(Optional)* **NVIDIA GPU** with CUDA support. The system automatically falls back to CPU if CUDA is not detected.
+- Python 3.9+ (Python 3.11 recommended)
+- Git LFS (required to pull model checkpoints):
+  ```bash
+  git lfs install
+  git lfs pull
+  ```
 
----
+### Quick Launch
 
-### One-Click Launch (Ubuntu / Linux)
-The launcher automatically verifies the Python/conda environment, validates `.env` secrets, ensures model weights are pulled, and starts the server:
-
+#### Ubuntu / Linux
 ```bash
 chmod +x start.sh
 ./start.sh
 ```
 
-### Windows Launch
+#### Windows
 ```cmd
 start.bat
 ```
 
-### Manual Launch
+#### Manual Run
 ```bash
-# 1. Install dependencies
 pip install -r requirements.txt -r requirements_fastapi.txt
-
-# 2. Configure environment (do not commit .env)
-cp .env.example .env   # Or export FACE_API_KEY="my-secret-key-123"
-
-# 3. Start server
+cp .env.example .env
 python run.py
 ```
 
-Open **http://127.0.0.1:8000** in your browser. The default API key is `my-secret-key-123` (customizable in your local `.env`).
+The web dashboard is served at **http://127.0.0.1:8000** (Default API key: `my-secret-key-123`).
 
 ---
 
-## 🔌 RESTful API Reference
+## 5. REST API Endpoints
 
 All protected endpoints require the `X-API-Key` header:
 
-| Method | Endpoint | Auth | Description |
-| :--- | :--- | :---: | :--- |
-| `GET` | `/status` | Public | System diagnostic telemetry, GPU model name, and enrolled count |
-| `GET` | `/api/verify-key` | Required | Validate client API key against the server |
-| `POST` | `/recognize` | Required | Detect and recognize faces in an image; returns match, score, and bounding box |
-| `POST` | `/enroll` | Required | Register identity (`name` + `file`), extracts and stores 512-D embedding |
-| `GET` | `/users` | Required | List all registered user profiles and IDs |
-| `DELETE` | `/users/{user_id}` | Required | Remove an enrolled identity from SQLite database |
+- `GET /status` — Hardware diagnostics, active compute device (`cuda`/`cpu`), and profile count.
+- `GET /api/verify-key` — API key validation.
+- `POST /recognize` — Face detection, bounding box extraction, and identity matching.
+- `POST /enroll` — Extract and store 512-D embedding with user name.
+- `GET /users` — List all registered profiles.
+- `DELETE /users/{user_id}` — Remove an enrolled profile from SQLite database.
 
 ---
 
-## 🧪 Verification & Testing
+## 6. Project Layout
 
-Execute the test suite covering authentication, API endpoints, and error handling:
-
-```bash
-python -m unittest discover tests
+```text
+├── app/
+│   ├── config.py             # Settings, .env resolution & hardware selection
+│   ├── database.py           # SQLAlchemy SQLite schema
+│   ├── face_service.py       # Inference pipeline (YOLO + ArcFace ResNet-50)
+│   ├── main.py               # FastAPI endpoints
+│   ├── model.py              # PyTorch ArcFace model architecture
+│   ├── security.py           # API key authentication
+│   └── static/
+│       └── index.html        # Telemetry dashboard
+├── assets/
+│   ├── research/             # Theoretical figures from CVPR 2019 reference
+│   └── screenshots/          # Empirical monitoring & evaluation figures
+├── models/                   # Git LFS checkpoints (arcface.pth, yolo_face.pt)
+├── tests/                    # Automated test suite
+├── start.sh                  # Linux launcher
+├── start.bat                 # Windows launcher
+└── run.py                    # Cross-platform runner
 ```
 
 ---
 
-## 📖 Citation & Academic References
-
-If this codebase or methodology contributes to your research, please cite:
+## 7. References
 
 ```bibtex
 @inproceedings{deng2019arcface,
@@ -308,8 +168,6 @@ If this codebase or methodology contributes to your research, please cite:
 
 ---
 
-## 📄 License & Responsible Use
+## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-> **Ethical Notice**: Face images and facial biometric embeddings constitute sensitive biometric personal data. Users must obtain informed consent, implement access controls, protect biometric templates, and comply with all applicable local privacy regulations (e.g., GDPR, CCPA). Do not deploy this system for non-consensual surveillance.
