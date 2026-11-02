@@ -188,8 +188,8 @@ All protected endpoints require the `X-API-Key` header:
 
 - `GET /status` — Hardware diagnostics, active compute device (`cuda`/`cpu`), and profile count.
 - `GET /api/verify-key` — API key validation.
-- `POST /recognize` — Face detection, bounding box extraction, and identity matching.
-- `POST /enroll` — Extract and store 512-D embedding with user name.
+- `POST /recognize` — Face detection, bounding box extraction, and identity matching (max upload: 10 MiB, returns `413 Payload Too Large` if exceeded, configurable via `MAX_IMAGE_SIZE_BYTES`).
+- `POST /enroll` — Extract and store 512-D embedding with user name (max upload: 10 MiB, returns `413 Payload Too Large` if exceeded, configurable via `MAX_IMAGE_SIZE_BYTES`).
 - `GET /users` — List all registered profiles.
 - `DELETE /users/{user_id}` — Remove an enrolled profile from SQLite database.
 
