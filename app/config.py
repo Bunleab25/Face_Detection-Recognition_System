@@ -84,6 +84,9 @@ def _get_env_int(key: str, default: int) -> int:
         return default
 
 
+DEFAULT_MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MiB default maximum upload size
+
+
 @dataclass(frozen=True)
 class Settings:
     yolo_model_path: str
@@ -91,6 +94,7 @@ class Settings:
     device: str
     yolo_conf: float
     input_size: int
+    max_image_size_bytes: int = DEFAULT_MAX_IMAGE_SIZE_BYTES
 
 
 def load_settings() -> Settings:
@@ -105,6 +109,9 @@ def load_settings() -> Settings:
         device=_get_env_str("DEVICE", "cuda"),
         yolo_conf=_get_env_float("YOLO_CONF", 0.5),
         input_size=_get_env_int("ARCFACE_INPUT_SIZE", 112),
+        max_image_size_bytes=_get_env_int(
+            "MAX_IMAGE_SIZE_BYTES", DEFAULT_MAX_IMAGE_SIZE_BYTES
+        ),
     )
 
 

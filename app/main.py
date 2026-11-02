@@ -5,7 +5,7 @@ from typing import List, Optional
 import numpy as np
 import torch
 
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Query, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -100,19 +100,43 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     return {"message": f"Successfully deleted '{user_name}'", "id": user_id}
 
 
+HTTP_413_PAYLOAD_TOO_LARGE = getattr(status, "HTTP_413_CONTENT_TOO_LARGE", 413)
+
+
+async def read_bounded_image(
+    file: UploadFile,
+    max_bytes: int = settings.max_image_size_bytes,
+) -> bytes:
+    """Read at most `max_bytes + 1` bytes from an upload to enforce size limits without unbounded memory usage."""
+    content = await file.read(max_bytes + 1)
+    if len(content) > max_bytes:
+        limit_mib = max_bytes / (1024 * 1024)
+        mib_str = f"{int(limit_mib)} MiB" if limit_mib.is_integer() else f"{limit_mib:.2f} MiB"
+        raise HTTPException(
+            status_code=HTTP_413_PAYLOAD_TOO_LARGE,
+            detail=f"Image size exceeds maximum allowed limit of {mib_str} ({max_bytes} bytes)",
+        )
+    return content
+
+
 @app.post("/enroll", dependencies=[Depends(require_api_key)])
 async def enroll_user(
     name: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """Enroll a new identity into the database."""
+    """Enroll a new identity into the database.
+
+    Enforces maximum image upload size (default: 10 MiB, configurable via MAX_IMAGE_SIZE_BYTES).
+    Uploads exceeding the limit return 413 Payload Too Large before model processing.
+    """
     name = name.strip()
     if not name:
         raise HTTPException(status_code=400, detail="Name cannot be empty")
 
+    image_bytes = await read_bounded_image(file)
+
     try:
-        image_bytes = await file.read()
         embedding, box, det_conf = face_service.get_embedding(image_bytes)
 
         # Save to DB
@@ -127,6 +151,8 @@ async def enroll_user(
             "box": box,
             "det_conf": float(det_conf),
         }
+    except HTTPException:
+        raise
     except NoFaceDetectedError as e:
         raise HTTPException(
             status_code=400,
@@ -144,9 +170,14 @@ async def recognize_user(
     threshold: float = Query(0.5, ge=0.0, le=1.0),
     db: Session = Depends(get_db),
 ):
-    """Match a face against enrolled identities."""
+    """Match a face against enrolled identities.
+
+    Enforces maximum image upload size (default: 10 MiB, configurable via MAX_IMAGE_SIZE_BYTES).
+    Uploads exceeding the limit return 413 Payload Too Large before model processing.
+    """
+    image_bytes = await read_bounded_image(file)
+
     try:
-        image_bytes = await file.read()
         target_embedding, box, det_conf = face_service.get_embedding(image_bytes)
 
         users = db.query(User).all()
@@ -182,6 +213,8 @@ async def recognize_user(
             "message": "Face recognized" if best_match != "Unknown" else "Unrecognized person",
         }
 
+    except HTTPException:
+        raise
     except NoFaceDetectedError:
         # For real-time camera stream, return 200 with no face detected
         return {
