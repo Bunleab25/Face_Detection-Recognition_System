@@ -172,10 +172,13 @@ start.bat
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
+# Generate a key, then copy it into FACE_API_KEY in .env:
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+# Start only after setting FACE_API_KEY in .env:
 python run.py
 ```
 
-The web dashboard is served at **http://127.0.0.1:8000** (Default API key: `my-secret-key-123`).
+Copy the generated key into `.env` as `FACE_API_KEY=<your-generated-key>` before starting the server. The application refuses to start if the key is unset or matches a known placeholder. The web dashboard is served at **http://127.0.0.1:8000**; enter the configured key in the dashboard to authenticate.
 
 ---
 

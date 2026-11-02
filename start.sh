@@ -28,29 +28,27 @@ else
     exit 1
 fi
 
-# 2. Check & Create .env if missing
-if [ ! -f "$SCRIPT_DIR/.env" ]; then
-    echo "ℹ Creating default .env configuration..."
-    cat <<EOF > "$SCRIPT_DIR/.env"
-# Face Recognition System Configuration
-DEVICE=cuda
-FACE_API_KEY=my-secret-key-123
-YOLO_MODEL_PATH=models/yolo_face.pt
-ARCFACE_CKPT_PATH=models/arcface.pth
-YOLO_CONF=0.5
-HOST=127.0.0.1
-PORT=8000
-EOF
-    echo "✔ Generated .env (Default API Key: my-secret-key-123)"
-else
+# 2. Load local configuration if present
+if [ -f "$SCRIPT_DIR/.env" ]; then
     echo "✔ Found existing .env file"
 fi
 
-# Export FACE_API_KEY if present in .env
 if [ -f "$SCRIPT_DIR/.env" ]; then
+    FACE_API_KEY_FROM_ENV="${FACE_API_KEY:-}"
     set -a
     source "$SCRIPT_DIR/.env"
     set +a
+    if [ -n "$FACE_API_KEY_FROM_ENV" ]; then
+        FACE_API_KEY="$FACE_API_KEY_FROM_ENV"
+    fi
+    unset FACE_API_KEY_FROM_ENV
+fi
+
+# Require a user-provided API key before starting the service.
+if [ -z "${FACE_API_KEY:-}" ] || [ "$FACE_API_KEY" = "my-secret-key-123" ] || [ "$FACE_API_KEY" = "your_secret_api_key_here" ]; then
+    echo "❌ Error: Set FACE_API_KEY to a unique secret in .env or your environment."
+    echo "   See README.md for instructions. The service was not started."
+    exit 1
 fi
 
 # 3. Check Model Weights
@@ -63,7 +61,6 @@ fi
 # 4. Launch Application
 echo "------------------------------------------------------------------"
 echo "Starting web server on http://${HOST:-127.0.0.1}:${PORT:-8000} ..."
-echo "API Key configured: ${FACE_API_KEY:-Not set}"
 echo "------------------------------------------------------------------"
 
 exec "$PYTHON_BIN" run.py

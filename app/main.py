@@ -14,7 +14,9 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db, init_db, User
 from app.face_service import FaceService, NoFaceDetectedError
-from app.security import require_api_key
+from app.security import require_api_key, validate_api_key_configuration
+
+validate_api_key_configuration()
 
 app = FastAPI(
     title="Face Recognition & Detection System",

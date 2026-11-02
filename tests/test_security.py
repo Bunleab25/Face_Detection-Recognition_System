@@ -4,10 +4,21 @@ from unittest.mock import patch
 
 from fastapi import HTTPException
 
-from app.security import require_api_key
+from app.security import require_api_key, validate_api_key_configuration
 
 
 class RequireApiKeyTests(unittest.TestCase):
+    def test_api_key_configuration_rejects_missing_or_known_defaults(self):
+        for configured_key in ("", "  ", "my-secret-key-123", "your_secret_api_key_here"):
+            with self.subTest(configured_key=configured_key):
+                with patch.dict(os.environ, {"FACE_API_KEY": configured_key}, clear=True):
+                    with self.assertRaises(RuntimeError):
+                        validate_api_key_configuration()
+
+    def test_api_key_configuration_accepts_custom_key(self):
+        with patch.dict(os.environ, {"FACE_API_KEY": "a-unique-user-secret"}, clear=True):
+            validate_api_key_configuration()
+
     def test_missing_server_key_fails_closed(self):
         with patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(HTTPException) as error:
